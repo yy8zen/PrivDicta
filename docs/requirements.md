@@ -15,7 +15,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 - **R1.1** 動作確認の基準環境は Windows 11、macOS 14、Ubuntu 24.04（GNOME）の3つとする。
 - **R1.2** Wayland では次の制限を認め、README に明記する。
-  - グローバルホットキーは XDG Desktop Portal の GlobalShortcuts が使える環境でだけ登録する。使えない環境では、利用者が OS のショートカット設定に `moonshine-dictate toggle` コマンドを割り当てる（R3.4）。
+  - 第1版ではグローバルホットキーを登録しない。利用者が OS のショートカット設定に `moonshine-dictate toggle` コマンドを割り当てる（R3.4）。XDG Desktop Portal の GlobalShortcuts を使った登録は第2版以降で検討する。
   - テキストは `wl-copy` でクリップボードに入れ、貼り付けキーを `ydotool` で送る。`ydotool` が使えない環境では、クリップボードに入れたことを通知し、貼り付けは利用者が行う。
   - ライブ入力（R5.3）は Wayland では使えない。
   - 録音ウィンドウ（R4）の表示位置と最前面表示は保証しない。
@@ -68,7 +68,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 - **R5.1** 方法1「クリップボード」：録音終了時に、確定したテキスト全体を一度に挿入する。テキストをクリップボードに入れて貼り付けキー（Ctrl+V、macOS では Cmd+V）を送る。
 - **R5.2** クリップボード方式では、貼り付けの後に元のクリップボードの内容を戻す。戻す処理は設定で無効にできる。戻せる形式はテキストに限る（画像などは要確認）。
-- **R5.3** 方法2「ライブ入力」：区切りが確定するたびに、そのテキストを Unicode のキー入力として送る。Windows は `SendInput`（`KEYEVENTF_UNICODE`）、macOS は `CGEventKeyboardSetUnicodeString`、Linux（X11）は XTest を想定する。
+- **R5.3** 方法2「ライブ入力」：区切りが確定するたびに、そのテキストを入れる。Windows は `SendInput`（`KEYEVENTF_UNICODE`）、macOS は `CGEventKeyboardSetUnicodeString` で、Unicode のキー入力として送る。Linux（X11）では、区切りごとにクリップボード経由で貼り付ける。XTest で日本語を送ると、Xvfb 上の Qt アプリで「こんにちは、世界。」が「こんんちはは世界界」になり、1文字ごとに30ミリ秒の間を空けても直らなかったためである。
 - **R5.4** ライブ入力では、一度挿入したテキストを後から消して直す処理は行わない。途中結果は録音ウィンドウにだけ表示する（R4.4）。
 - **R5.5** ライブ入力で、日本語 IME がオンのままでも文字が正しく入るかを3つの OS で確認する（要確認）。入らない組み合わせは README に書く。
 - **R5.6** 標準の挿入方法はクリップボードとする。ライブ入力は、文字の欠けや順序の入れ替わりがアプリによって起きる可能性があるからである。
@@ -81,7 +81,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
   - macOS：`~/Library/Application Support/moonshine-dictate/config.toml`
   - Linux：`$XDG_CONFIG_HOME/moonshine-dictate/config.toml`（未設定なら `~/.config/moonshine-dictate/config.toml`）
 - **R6.3** 設定画面は作らない。トレイメニューの「設定の再読み込み」で、アプリを再起動せずに反映する。
-- **R6.4** 設定ファイルに誤りがある場合は、該当行を通知に表示し、誤った項目だけ標準値で動かす。
+- **R6.4** 設定ファイルに誤りがある場合は、誤った項目名と値を通知に表示し、その項目だけ標準値で動かす。TOML の書式の誤りでファイル全体を読めない場合は、行番号を表示し、すべての項目を標準値で動かす。
 - **R6.5** 第1版の設定項目は次のとおりとする。
 
 | 項目 | 内容 | 標準値 |
@@ -98,14 +98,14 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 ## 7. 配布物とライセンスを整える
 
-- **R7.1** 配布形式は Windows がインストーラー（`.exe`）、macOS が `.dmg`、Linux が AppImage とする。
+- **R7.1** 配布形式は Windows がインストーラー（`.exe`、Inno Setup で作る）、macOS が `.dmg`（Apple Silicon 版と Intel 版）、Linux が AppImage とする。配布物は GitHub Actions で作る。モデルなしでの大きさは、Linux 版の展開後が 255MB、AppImage が 94MB だった（2026年11月、PySide6 6.12）。
 - **R7.2** 配布物には Moonshine Community License の全文を同梱する。再配布の条件はライセンス本文で確認する（要確認）。moonshine-voice 0.1.6 は、英語以外のモデルを読み込むときに「non-commercial Moonshine Community License」と表示する。README では「年間収益100万ドル未満なら商用も可」と書いているので、どちらが正しいかを https://www.moonshine.ai/license で確かめ、README を合わせる。
-- **R7.3** README の「公式ライセンス全文」のリンクが `https://github.com` のトップページを指しているので、正しい URL に直す。
+- **R7.3** README の「公式ライセンス全文」のリンクを https://www.moonshine.ai/license に直した。
 
 ## 8. Python と PySide6 で実装する
 
 - **R8.1** 言語は Python 3.12 以降、画面は PySide6（Qt）で作る。音声認識は公式の Python パッケージ `moonshine-voice` を使う。0.1.6 の時点でパッケージ本体は 22MB で、ONNX Runtime を含むネイティブライブラリ（Linux 版で 13MB）が入っている。録音には同梱の `sounddevice` を使う。
-- **R8.2** OS 固有の処理（録音ウィンドウのフォーカス制御、キー送信、クリップボード貼り付け）は、Windows は ctypes、macOS は pyobjc、Linux は python-xlib で呼ぶ。OS ごとに1つのモジュールにまとめ、共通のインターフェースで呼び出す。
+- **R8.2** グローバルホットキーとキー送信には pynput を使う。録音ウィンドウのフォーカス制御は、Windows は ctypes、macOS は pyobjc で直接設定する。クリップボードの読み書きは Qt で行う。
 - **R8.3** 配布物は PyInstaller で作る。ウイルス対策ソフトの誤検出が問題になったら Nuitka に切り替える。
 - **R8.4** `moonshine-voice` は互換性のない API の変更が入ることがあるため、バージョンを固定する。
 
