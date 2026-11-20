@@ -70,7 +70,7 @@ python -m pytest                   # テスト（Linux では xvfb-run -a python
 pyinstaller packaging/moonshine-dictate.spec   # 配布用に固める
 ```
 
-要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。`v` で始まるタグを push すると、Windows のインストーラー、macOS の dmg（Apple Silicon 版と Intel 版）、Linux の AppImage をリリースの下書きに添付します。
+要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。`v` で始まるタグを push すると、Windows のインストーラー、macOS の dmg（Apple Silicon 版のみ）、Linux の AppImage をリリースの下書きに添付します。
 
 ## 📄 ライセンス
 

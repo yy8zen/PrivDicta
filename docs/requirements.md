@@ -9,7 +9,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 | OS | サポート範囲 |
 | --- | --- |
 | Windows 10 / 11（x64） | 全機能 |
-| macOS 13 以降（Apple Silicon、Intel） | 全機能。ただし署名・公証なしで配布する（1.3） |
+| macOS 13 以降（Apple Silicon のみ。moonshine-voice の Intel Mac 向けパッケージが 0.0.59 で止まっているため） | 全機能。ただし署名・公証なしで配布する（1.3） |
 | Linux（X11） | 全機能 |
 | Linux（Wayland） | 制限付き（1.2） |
 
@@ -98,7 +98,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 ## 7. 配布物とライセンスを整える
 
-- **R7.1** 配布形式は Windows がインストーラー（`.exe`、Inno Setup で作る）、macOS が `.dmg`（Apple Silicon 版と Intel 版）、Linux が AppImage とする。配布物は GitHub Actions で作る。モデルなしでの大きさは、Linux 版の展開後が 255MB、AppImage が 94MB だった（2026年11月、PySide6 6.12）。
+- **R7.1** 配布形式は Windows がインストーラー（`.exe`、Inno Setup で作る）、macOS が `.dmg`（Apple Silicon 版のみ）、Linux が AppImage とする。配布物は GitHub Actions で作る。モデルなしでの大きさは、Linux 版の展開後が 255MB、AppImage が 94MB だった（2026年11月、PySide6 6.12）。
 - **R7.2** 配布物には Moonshine Community License の全文を同梱する。再配布の条件はライセンス本文で確認する（要確認）。moonshine-voice 0.1.6 は、英語以外のモデルを読み込むときに「non-commercial Moonshine Community License」と表示する。README では「年間収益100万ドル未満なら商用も可」と書いているので、どちらが正しいかを https://www.moonshine.ai/license で確かめ、README を合わせる。
 - **R7.3** README の「公式ライセンス全文」のリンクを https://www.moonshine.ai/license に直した。
 
