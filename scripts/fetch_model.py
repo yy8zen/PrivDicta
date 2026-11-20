@@ -20,6 +20,8 @@ from moonshine_dictate.engine import MODEL_DIRS  # noqa: E402
 
 
 def main(argv: list[str]) -> int:
+    # Windows のコンソール（cp1252 など）でも日本語のメッセージで落ちないようにする
+    sys.stdout.reconfigure(errors="replace")
     from moonshine_voice import ModelArch
     from moonshine_voice.download import get_model_for_language
 
