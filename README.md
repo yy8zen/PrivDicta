@@ -3,6 +3,53 @@ Moonshine Voiceを使った、Windows・macOS・Linux対応のローカル音声
 
 ホットキーを押すと録音が始まり、話した日本語がフォーカスのあるアプリに入力されます。操作は Windows 11 の音声入力（Win+H）に合わせています。音声認識はすべて PC の中で行い、ネットワーク通信は一切しません。
 
+## インストールして起動する
+
+配布ファイルは GitHub の [Releases](https://github.com/yy8zen/moonshine-dictate/releases) からダウンロードします。まだリリースがない間は、[Actions](https://github.com/yy8zen/moonshine-dictate/actions/workflows/build.yml) の最新の成功した実行を開き、Artifacts から自分の OS の zip をダウンロードして展開してください（GitHub へのログインが必要です）。
+
+### Windows
+
+1. `moonshine-dictate-<バージョン>-windows-setup.exe` を実行します。管理者権限は要りません。`%LOCALAPPDATA%\Programs\moonshine-dictate` にインストールされます。
+2. 「Windows によって PC が保護されました」と表示されたら、「詳細情報」を押してから「実行」を押します。配布ファイルに電子署名がないため表示されます。
+3. インストールの最後の画面で「moonshine-dictate を起動する」にチェックを入れたまま「完了」を押すと起動します。次からはスタートメニューの「moonshine-dictate」から起動します。
+
+### macOS（Apple Silicon）
+
+1. `moonshine-dictate-<バージョン>-macos-arm64.dmg` を開き、`moonshine-dictate.app` を「アプリケーション」フォルダにドラッグします。
+2. 「アプリケーション」フォルダで moonshine-dictate を右クリックして「開く」を選びます。macOS 15 以降でこの方法では開けない場合は、一度ダブルクリックして警告を閉じてから、「システム設定 > プライバシーとセキュリティ」の下にある「このまま開く」を押します。配布ファイルが Apple の署名と公証を受けていないため、この手順が要ります。
+3. マイクとアクセシビリティの許可を求められたら、許可します（[macOS の注意](#macos)を参照）。
+4. Dock にはアイコンが出ません。メニューバーにマイクのアイコンが出れば起動しています。
+
+### Linux
+
+1. `moonshine-dictate-<バージョン>-linux-x86_64.AppImage` に実行権限を付けて、実行します。
+
+   ```
+   chmod +x moonshine-dictate-*-linux-x86_64.AppImage
+   ./moonshine-dictate-*-linux-x86_64.AppImage
+   ```
+
+2. 「libfuse.so.2 が見つからない」というエラーで起動しない場合は、FUSE 2 のライブラリを入れてください。Ubuntu 24.04 では `sudo apt install libfuse2t64`、22.04 では `sudo apt install libfuse2` です。
+
+### 起動・終了・自動起動
+
+- 起動すると、モデルを読み込む間はトレイのアイコンが黄色になり、使えるようになると灰色になります。
+- すでに起動している状態でもう一度起動すると、「すでに起動しています」と表示して終わります。2つ同時には動きません。
+- 終了するときは、トレイのアイコンのメニューから「終了」を選びます。
+- ログインしたときに自動で起動させるには、設定ファイルで `autostart = true` にして、「設定の再読み込み」を選びます。
+
+### ソースコードから起動する
+
+Python 3.11 以降が必要です。
+
+```
+git clone https://github.com/yy8zen/moonshine-dictate.git
+cd moonshine-dictate
+pip install -e .
+python scripts/fetch_model.py      # 日本語モデル（約120MB）を models/ にダウンロードする。最初の1回だけ
+python -m moonshine_dictate        # 起動する
+```
+
 ## 使い方
 
 1. アプリを起動すると、タスクトレイ（macOS ではメニューバー）にマイクのアイコンが出ます。アイコンが灰色になったら使えます。モデルを読み込んでいる間は黄色です。
@@ -26,6 +73,15 @@ Moonshine Voiceを使った、Windows・macOS・Linux対応のローカル音声
 moonshine-dictate toggle   # 録音の開始・終了を切り替える（start / stop / reload / quit も使える）
 ```
 
+`moonshine-dictate` の部分は、OS ごとに次のパスに置き換えてください。
+
+| OS | コマンドのパス |
+| --- | --- |
+| Windows | `"%LOCALAPPDATA%\Programs\moonshine-dictate\moonshine-dictate.exe"` |
+| macOS | `/Applications/moonshine-dictate.app/Contents/MacOS/moonshine-dictate` |
+| Linux | AppImage のファイルのパス（例：`~/Applications/moonshine-dictate-0.1.0-linux-x86_64.AppImage`） |
+| ソースコードから | `python -m moonshine_dictate` |
+
 ## 設定ファイル
 
 初回の起動時に、次の場所に標準値の設定ファイルが作られます。各項目の説明はファイルの中にコメントで書いてあります。トレイのメニューから「設定ファイルを開く」で開けます。編集した後は「設定の再読み込み」で反映されます。
@@ -44,7 +100,7 @@ moonshine-dictate toggle   # 録音の開始・終了を切り替える（start 
 
 配布しているアプリは Apple の署名と公証を受けていません。
 
-- 初回は、Finder でアプリを右クリックして「開く」を選んでください。ダブルクリックでは警告が出て開けません。
+- 初回の開き方は[インストールして起動する](#macosapple-silicon)を参照してください。ダブルクリックだけでは警告が出て開けません。
 - 「システム設定 > プライバシーとセキュリティ」で、**マイク**と**アクセシビリティ**を許可してください。アクセシビリティは、ホットキーの検出とテキストの入力に使います。
 - アップデートした後にホットキーが効かなくなったら、アクセシビリティの一覧から moonshine-dictate を一度削除して、もう一度許可してください。
 
