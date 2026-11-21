@@ -13,6 +13,8 @@ Moonshine Voiceを使った、Windows・macOS・Linux対応のローカル音声
 2. 「Windows によって PC が保護されました」と表示されたら、「詳細情報」を押してから「実行」を押します。配布ファイルに電子署名がないため表示されます。
 3. インストールの最後の画面で「moonshine-dictate を起動する」にチェックを入れたまま「完了」を押すと起動します。次からはスタートメニューの「moonshine-dictate」から起動します。
 
+**スマート アプリ コントロールがオンの PC では動かない場合があります。** 配布ファイルに電子署名がないため、「アプリケーション制御ポリシーによってこのファイルがブロックされました」と表示され、インストーラーやアプリが止められることがあります。初めて実行したときだけ止められ、もう一度実行すると動く場合もあります。何度実行しても止められる場合は、ファイルを個別に許可する方法はありません。「Windows セキュリティ > アプリとブラウザーの制御 > スマート アプリ コントロール」をオフにするしかありません。会社が管理する PC では、管理者に相談してください。
+
 ### macOS（Apple Silicon）
 
 1. `moonshine-dictate-<バージョン>-macos-arm64.dmg` を開き、`moonshine-dictate.app` を「アプリケーション」フォルダにドラッグします。
@@ -45,7 +47,7 @@ Python 3.11 以降が必要です。
 ```
 git clone https://github.com/yy8zen/moonshine-dictate.git
 cd moonshine-dictate
-pip install -e .
+python -m pip install -e .
 python scripts/fetch_model.py      # 日本語モデル（約120MB）を models/ にダウンロードする。最初の1回だけ
 python -m moonshine_dictate        # 起動する
 ```
@@ -119,7 +121,7 @@ Wayland では、セキュリティの仕組み上、ほかのアプリのキー
 ## 開発
 
 ```
-pip install -e ".[dev]"
+python -m pip install -e ".[dev]"
 python scripts/fetch_model.py      # 同梱する日本語モデルを models/ にダウンロードする
 python -m moonshine_dictate        # 起動する
 python -m pytest                   # テスト（Linux では xvfb-run -a python -m pytest）
