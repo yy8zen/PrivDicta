@@ -39,6 +39,8 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 | `base-ja` | 非対応 | 141MB |
 | `tiny-ja` | 非対応 | 72MB |
 
+  - Medium Streaming は英語にしかない（moonshine-voice 0.1.6 で確認）。
+  - 2026年11月、Windows 11 の実機で small-streaming-ja の精度が低く、使えないと判断された。同じ録音を各モデルにかける `scripts/compare_models.py` で small-streaming と base を比べ、同梱するモデルを決め直す。設定項目 `model_arch` で base も選べるようにした。
 - **R2.6** 性能目標：1区切り（10秒以内の発話）が終わってから、その区切りのテキストが挿入されるまで1秒以内とする。基準機は Core i5 第10世代相当、または Apple M1 とする。
 - **R2.7** ストリーミング認識の途中結果は `LineTextChanged` イベント、区切りの確定は `LineCompleted` イベントで受け取る。録音ウィンドウの途中表示（R4.4）には前者を、ライブ入力（R5.3）には後者を使う。
 
