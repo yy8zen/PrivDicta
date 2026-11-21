@@ -1,0 +1,121 @@
+name: build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # Windows のコンソールは cp1252 のため、日本語を print すると落ちる
+  PYTHONUTF8: "1"
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Qt と PortAudio の実行に要るライブラリを入れる
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libegl1 libxkbcommon-x11-0 libxcb-cursor0 \
+            libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-randr0 \
+            libxcb-render-util0 libxcb-image0 libportaudio2
+      - run: pip install -e ".[dev]"
+      - name: テストを実行する
+        run: xvfb-run -a python -m pytest -q
+
+  package:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows
+          # Intel Mac 版は作らない。moonshine-voice の macOS x86_64 向けパッケージは 0.0.59 で止まっている
+          - os: macos-latest
+            name: macos-arm64
+          - os: ubuntu-22.04
+            name: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: バージョンを決める
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=0.1.0-dev.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          fi
+      - name: Linux のビルドに要るライブラリを入れる
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 \
+            libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-randr0 libxcb-render-util0 \
+            libxcb-image0 libportaudio2
+      - run: pip install -e ".[dev]"
+      - name: 同梱する日本語モデルをダウンロードする
+        run: python scripts/fetch_model.py
+      - name: PyInstaller で固める
+        run: pyinstaller --noconfirm packaging/moonshine-dictate.spec
+
+      - name: Windows のインストーラーを作る
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) {
+            choco install innosetup -y --no-progress
+            $env:Path += ";C:\Program Files (x86)\Inno Setup 6"
+          }
+          iscc /DAppVersion=$env:VERSION packaging\windows\installer.iss
+
+      - name: macOS の dmg を作る（アドホック署名）
+        if: runner.os == 'macOS'
+        run: |
+          codesign --force --deep --sign - dist/moonshine-dictate.app
+          hdiutil create -volname moonshine-dictate -srcfolder dist/moonshine-dictate.app \
+            -ov -format UDZO "dist/moonshine-dictate-${VERSION}-${{ matrix.name }}.dmg"
+
+      - name: Linux の AppImage を作る
+        if: runner.os == 'Linux'
+        run: bash packaging/linux/build-appimage.sh "$VERSION"
+
+      - name: 配布物のサイズを表示する
+        shell: bash
+        run: ls -l dist/*.exe dist/*.dmg dist/*.AppImage 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: moonshine-dictate-${{ matrix.name }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          draft: true

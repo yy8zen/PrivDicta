@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moonshine-dictate"
+version = "0.1.0"
+description = "Moonshine Voice を使ったローカル日本語音声入力ツール"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    # API に互換性のない変更が入ることがあるため固定する（要件 R8.4）
+    "moonshine-voice==0.1.6",
+    "PySide6-Essentials>=6.7",
+    "pynput>=1.7.7",
+    "sounddevice>=0.4.6",
+    "numpy>=1.26",
+    "pyobjc-framework-Cocoa>=10; sys_platform == 'darwin'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6.10"]
+
+[project.scripts]
+moonshine-dictate = "moonshine_dictate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
