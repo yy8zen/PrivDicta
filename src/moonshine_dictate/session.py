@@ -125,7 +125,18 @@ class Session(QObject):
         if self._state in (LOADING, BROKEN):
             self._set_state(IDLE)
 
+    def begin_loading(self) -> None:
+        """モデルを読み込み直す間、録音を受け付けない。録音中なら、終わってから読み込み中になる。"""
+        if self._state in (IDLE, BROKEN):
+            self._set_state(LOADING)
+
     def _on_load_failed(self, message: str) -> None:
+        if getattr(self._engine, "is_loaded", False):
+            # 読み込み直しに失敗しても、前のモデルで使い続ける
+            self._notify(f"モデルを読み込めなかったため、前のモデルを使います: {message}", True)
+            if self._state == LOADING:
+                self._set_state(IDLE)
+            return
         self._set_state(BROKEN)
         self._notify(f"モデルを読み込めませんでした: {message}", True)
 

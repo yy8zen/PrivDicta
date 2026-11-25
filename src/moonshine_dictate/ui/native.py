@@ -77,3 +77,15 @@ def hide_dock_icon() -> None:
         NSApplication.sharedApplication().setActivationPolicy_(NSApplicationActivationPolicyAccessory)
     except Exception:  # pragma: no cover
         log.exception("Dock アイコンを隠せませんでした")
+
+
+def activate_app() -> None:
+    """設定画面を開くときに、アプリを前面に出す。macOS では Dock に出ないアプリでも前面にできる。"""
+    if not IS_MACOS:
+        return
+    try:
+        from AppKit import NSApplication
+
+        NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
+    except Exception:  # pragma: no cover
+        log.exception("アプリを前面に出せませんでした")

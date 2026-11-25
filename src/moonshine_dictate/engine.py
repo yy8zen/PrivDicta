@@ -63,6 +63,26 @@ def find_input_device(name: str):
     raise LookupError(f"マイク {name!r} が見つかりません")
 
 
+def list_input_devices() -> list[str]:
+    """マイクの名前の一覧。Windows では同じマイクが API ごとに並ぶので、重複を除く。"""
+    try:
+        import sounddevice as sd
+
+        names = [d.get("name", "") for d in sd.query_devices() if d.get("max_input_channels", 0) > 0]
+    except Exception:
+        log.exception("マイクの一覧を取得できませんでした")
+        return []
+    return list(dict.fromkeys(n for n in names if n))
+
+
+def available_models(model_dir: str = "") -> list[str]:
+    """ディスクにあって選べるモデルの種類。model_dir を指定した場合は、全種類を選べることにする。"""
+    if model_dir:
+        return list(MODEL_DIRS)
+    return [key for key, (dirname, _) in MODEL_DIRS.items()
+            if (resource_root() / "models" / dirname).is_dir()]
+
+
 class Engine(QObject):
     """認識エンジン。`load()` の後、`start()` と `stop()` を繰り返し呼べる。"""
 

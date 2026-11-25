@@ -30,7 +30,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 - **R2.2** モデルはインストーラーまたはアプリ本体に同梱し、初回起動時のダウンロードは行わない。
 - **R2.3** アプリはネットワーク通信を一切しない。アップデート確認、利用統計の送信、クラッシュレポートの送信も行わない。
 - **R2.4** 発話は無音検出（VAD）で区切り、区切りごとに認識する。録音が長くなっても、終了時に全体をまとめて認識する待ち時間が発生しないようにする。
-- **R2.5** 同梱するモデルは日本語のストリーミング版 `small-streaming-ja`（量子化版、122MB）とする。moonshine-voice 0.1.6 が日本語で標準に使うモデルである。R2.6 の性能目標を満たせない場合は `tiny-streaming-ja`（量子化版、32MB）に切り替える。日本語のモデルは次の4種類がある（moonshine-voice 0.1.6 のモデル一覧から取得）。
+- **R2.5** 同梱するモデルは `small-streaming-ja`（量子化版、122MB）と `base-ja`（141MB）の2つとする。標準は small-streaming で、話しながら文字を出すため（2026年11月に決定）。base はストリーミング非対応だが、精度を重視する利用者が設定画面で選べるようにする。モデルを切り替えたら、アプリを再起動せずに読み込み直す。日本語のモデルは次の4種類がある（moonshine-voice 0.1.6 のモデル一覧から取得）。
 
 | モデル | ストリーミング | ファイルサイズ |
 | --- | --- | --- |
@@ -85,7 +85,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
   - Windows：`%APPDATA%\moonshine-dictate\config.toml`
   - macOS：`~/Library/Application Support/moonshine-dictate/config.toml`
   - Linux：`$XDG_CONFIG_HOME/moonshine-dictate/config.toml`（未設定なら `~/.config/moonshine-dictate/config.toml`）
-- **R6.3** 設定画面は作らない。トレイメニューの「設定の再読み込み」で、アプリを再起動せずに反映する。
+- **R6.3** トレイメニューの「設定…」から開く設定画面で、すべての項目を変えられるようにする（2026年11月に、設定画面を作らない方針から変更）。保存すると設定ファイルに書き出し、アプリを再起動せずに反映する。設定ファイルの説明コメントは、保存しても残す。設定ファイルを直接編集した場合は、トレイメニューの「設定の再読み込み」で反映する。
 - **R6.4** 設定ファイルに誤りがある場合は、誤った項目名と値を通知に表示し、その項目だけ標準値で動かす。TOML の書式の誤りでファイル全体を読めない場合は、行番号を表示し、すべての項目を標準値で動かす。
 - **R6.5** 第1版の設定項目は次のとおりとする。
 
@@ -103,7 +103,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 ## 7. 配布物とライセンスを整える
 
-- **R7.1** 配布形式は Windows がインストーラー（`.exe`、Inno Setup で作る）、macOS が `.dmg`（Apple Silicon 版のみ）、Linux が AppImage とする。配布物は GitHub Actions で作る。モデルなしでの大きさは、Linux 版の展開後が 255MB、AppImage が 94MB だった（2026年11月、PySide6 6.12）。
+- **R7.1** 配布形式は Windows がインストーラー（`.exe`、Inno Setup で作る）、macOS が `.dmg`（Apple Silicon 版のみ）、Linux が AppImage とする。配布物は GitHub Actions で作る。モデルなしでの大きさは、Linux 版の展開後が 255MB、AppImage が 94MB だった（2026年11月、PySide6 6.12）。small-streaming だけを同梱した v0.1.0 は、Windows のインストーラーが 157MB、macOS の dmg が 167MB、AppImage が 208MB だった。base も同梱すると、それぞれ約140MB増える見込み。
 - **R7.2** 配布物には Moonshine Community License の全文を同梱する。再配布の条件はライセンス本文で確認する（要確認）。moonshine-voice 0.1.6 は、英語以外のモデルを読み込むときに「non-commercial Moonshine Community License」と表示する。README では「年間収益100万ドル未満なら商用も可」と書いているので、どちらが正しいかを https://www.moonshine.ai/license で確かめ、README を合わせる。
 - **R7.3** README の「公式ライセンス全文」のリンクを https://www.moonshine.ai/license に直した。
 
@@ -118,7 +118,6 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 - 押している間だけ録音する方式
 - 挿入済みテキストの消去・修正（「今のを消して」などの音声コマンドを含む）
-- 設定画面
 - 日本語以外のモデルへの切り替え
 - GPU での認識
 - Wayland でのライブ入力

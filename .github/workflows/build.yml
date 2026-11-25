@@ -68,7 +68,9 @@ jobs:
             libxcb-image0 libportaudio2
       - run: pip install -e ".[dev]"
       - name: 同梱する日本語モデルをダウンロードする
-        run: python scripts/fetch_model.py
+        run: |
+          python scripts/fetch_model.py small-streaming
+          python scripts/fetch_model.py base
       - name: PyInstaller で固める
         run: pyinstaller --noconfirm packaging/moonshine-dictate.spec
 

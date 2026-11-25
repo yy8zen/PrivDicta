@@ -1,5 +1,6 @@
 # PyInstaller の設定。リポジトリのルートで次のように実行する。
 #   python scripts/fetch_model.py
+#   python scripts/fetch_model.py base
 #   pyinstaller packaging/moonshine-dictate.spec
 # -*- mode: python -*-
 
@@ -9,14 +10,15 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 ROOT = Path(SPECPATH).parent
-MODEL = ROOT / "models" / "small-streaming-ja"
-if not MODEL.is_dir():
-    raise SystemExit(f"{MODEL} がありません。先に python scripts/fetch_model.py を実行してください")
+# 同梱するモデル。small-streaming は標準、base は設定画面で選べる精度重視のモデル
+MODELS = ["small-streaming-ja", "base-ja"]
 
-datas = [
-    (str(MODEL), "models/small-streaming-ja"),
-    (str(ROOT / "LICENSE"), "."),
-]
+datas = [(str(ROOT / "LICENSE"), ".")]
+for name in MODELS:
+    model = ROOT / "models" / name
+    if not model.is_dir():
+        raise SystemExit(f"{model} がありません。先に python scripts/fetch_model.py を実行してください")
+    datas.append((str(model), f"models/{name}"))
 # Moonshine の同梱ライセンス全文（要件 R7.2）。ファイルがあれば入れる
 community_license = ROOT / "packaging" / "MOONSHINE-COMMUNITY-LICENSE.txt"
 if community_license.exists():

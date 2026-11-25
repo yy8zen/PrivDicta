@@ -11,6 +11,7 @@ from moonshine_dictate.ui import icons
 
 class Tray(QObject):
     toggle_requested = Signal()
+    settings_requested = Signal()
     open_config_requested = Signal()
     reload_requested = Signal()
     quit_requested = Signal()
@@ -28,6 +29,9 @@ class Tray(QObject):
         self._toggle.triggered.connect(self.toggle_requested)
         self._menu.addAction(self._toggle)
         self._menu.addSeparator()
+        settings = QAction("設定…", self._menu)
+        settings.triggered.connect(self.settings_requested)
+        self._menu.addAction(settings)
         open_cfg = QAction("設定ファイルを開く", self._menu)
         open_cfg.triggered.connect(self.open_config_requested)
         self._menu.addAction(open_cfg)
