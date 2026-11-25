@@ -89,6 +89,10 @@ def copy_python_licenses(out: Path) -> tuple[list[dict], list[str]]:
             # PySide6 と shiboken6 のパッケージにはライセンスのファイルが入っていない。
             # 本文は packaging/licenses/ の LGPL-3.0 と GPL-3.0 を同梱している
             copied = ["other/LGPL-3.0.txt", "other/GPL-3.0.txt"]
+        if not copied and name.lower().startswith("pyobjc"):
+            # pyobjc の一部のパッケージ（pyobjc-core など）にはライセンスのファイルが入っていない。
+            # 本文（MIT）は開発元のリポジトリの pyobjc-core/License.txt を packaging/licenses/ に置いている
+            copied = ["other/pyobjc-LICENSE.txt"]
         if not copied:
             missing.append(name)
         rows.append({"name": name, "version": version, "license": license_of(dist),
