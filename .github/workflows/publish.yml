@@ -1,0 +1,78 @@
+name: publish
+
+# 下書きのリリースを確かめてから公開する。Actions の画面か API から手動で実行する。
+# 公開の前に、配布ファイルとライセンスのファイルがそろっていて、旧名称のファイルがないことを確かめ、
+# 足りなければ公開しない（要件 R7.2、R7.4、R7.5）。
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 公開するリリースのタグ（例 v0.2.0）
+        required: true
+      delete_draft:
+        description: あわせて削除する古い下書きリリースの名前（例 v0.1.0）。空なら削除しない
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      TAG: ${{ inputs.tag }}
+      OLD: ${{ inputs.delete_draft }}
+    steps:
+      - name: 公開する下書きを探して中身を確かめる
+        id: check
+        run: |
+          set -euo pipefail
+          id=$(gh api "repos/$REPO/releases?per_page=100" \
+            | jq -r --arg tag "$TAG" '[.[] | select(.draft and .tag_name == $tag)] | first | .id // empty')
+          if [ -z "$id" ]; then
+            echo "::error::$TAG の下書きリリースが見つかりません"
+            exit 1
+          fi
+          assets=$(gh api "repos/$REPO/releases/$id/assets?per_page=100" | jq -r '.[].name')
+          echo "添付ファイル:"
+          echo "$assets"
+          missing=0
+          for pattern in 'windows-setup\.exe$' 'macos-arm64\.dmg$' 'linux-x86_64\.AppImage$' \
+                         '^THIRD-PARTY-NOTICES-windows' '^THIRD-PARTY-NOTICES-macos' '^THIRD-PARTY-NOTICES-linux' \
+                         '^NOTICE\.txt$' '^MOONSHINE-LICENSE\.txt$'; do
+            if ! echo "$assets" | grep -Eq "$pattern"; then
+              echo "::error::添付ファイルが足りません: $pattern"
+              missing=1
+            fi
+          done
+          if echo "$assets" | grep -qi 'moonshine-dictate'; then
+            echo "::error::旧名称（moonshine-dictate）のファイルが添付されています"
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - name: 公開する
+        run: |
+          set -euo pipefail
+          gh api -X PATCH "repos/$REPO/releases/${{ steps.check.outputs.id }}" \
+            -F draft=false -f make_latest=true --jq '.html_url'
+
+      - name: 古い下書きを削除する
+        if: inputs.delete_draft != ''
+        run: |
+          set -euo pipefail
+          ids=$(gh api "repos/$REPO/releases?per_page=100" \
+            | jq -r --arg old "$OLD" '.[] | select(.draft and (.name == $old or .tag_name == $old)) | .id')
+          if [ -z "$ids" ]; then
+            echo "$OLD の下書きはありません"
+          fi
+          for id in $ids; do
+            gh api -X DELETE "repos/$REPO/releases/$id"
+            echo "下書き $OLD（id $id）を削除しました"
+          done

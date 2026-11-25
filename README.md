@@ -147,7 +147,7 @@ python -m pytest                   # テスト（Linux では xvfb-run -a python
 pyinstaller packaging/privdicta.spec   # 配布用に固める
 ```
 
-要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。`v` で始まるタグを push すると、Windows のインストーラー、macOS の dmg（Apple Silicon 版のみ）、Linux の AppImage をリリースの下書きに添付します。
+要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。`v` で始まるタグを push すると、Windows のインストーラー、macOS の dmg（Apple Silicon 版のみ）、Linux の AppImage をリリースの下書きに添付します。下書きの中身を確かめて公開するには、Actions の「publish」を、公開するタグを指定して実行します。配布ファイル、ライセンスのファイル、サードパーティのライセンス一覧がそろっていない場合や、旧名称のファイルがある場合は、公開しません。
 
 ## 📄 ライセンス
 
