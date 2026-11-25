@@ -20,8 +20,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from moonshine_dictate import __version__
-from moonshine_dictate.platform_info import IS_MACOS, IS_WINDOWS, config_dir
+from ototype import __version__
+from ototype.platform_info import IS_MACOS, IS_WINDOWS, config_dir
 
 POWERED_BY = "Powered by Moonshine AI"
 
@@ -39,17 +39,17 @@ def platform_texts() -> dict[str, str]:
     if IS_WINDOWS:
         return {
             "where": "画面右下のタスクトレイ（表示されていなければ「^」の中）",
-            "launch": "スタートメニューの「moonshine-dictate」から起動します。",
-            "uninstall": ("「設定 &gt; アプリ &gt; インストールされているアプリ」で moonshine-dictate の"
+            "launch": "スタートメニューの「OtoType」から起動します。",
+            "uninstall": ("「設定 &gt; アプリ &gt; インストールされているアプリ」で OtoType の"
                           "「…」から「アンインストール」を選びます。"
                           f"設定とログを消すには、<code>{folder}</code> フォルダも削除してください。"),
         }
     if IS_MACOS:
         return {
             "where": "画面右上のメニューバー",
-            "launch": "「アプリケーション」フォルダの moonshine-dictate を開きます。",
+            "launch": "「アプリケーション」フォルダの OtoType を開きます。",
             "uninstall": ("メニューバーのアイコンから「終了」を選び、「アプリケーション」フォルダの"
-                          "moonshine-dictate をゴミ箱に入れます。"
+                          "OtoType をゴミ箱に入れます。"
                           f"設定とログを消すには、<code>{folder}</code> フォルダも削除してください。"
                           "「システム設定 &gt; プライバシーとセキュリティ &gt; アクセシビリティ」の一覧からも"
                           "削除しておくと確実です。"),
@@ -66,7 +66,7 @@ def build_html(hotkey: str) -> str:
     t = platform_texts()
     key = escape(_hotkey_label(hotkey))
     html = f"""
-<h2>moonshine-dictate へようこそ</h2>
+<h2>OtoType へようこそ</h2>
 <p>話した日本語を、カーソルのある場所に入力するアプリです。音声の認識はすべてこの PC の中で行い、
 インターネットには接続しません。</p>
 <p>アプリは{t["where"]}にマイクのアイコンとして常駐しています。
@@ -104,7 +104,7 @@ class WelcomeDialog(QDialog):
 
     def __init__(self, hotkey: str, autostart: bool, parent: QWidget | None = None):
         super().__init__(parent)
-        self.setWindowTitle("moonshine-dictate の使い方")
+        self.setWindowTitle("OtoType の使い方")
         self.resize(560, 640)
 
         body = QTextBrowser()

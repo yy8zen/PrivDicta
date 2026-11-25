@@ -25,7 +25,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from fetch_model import fetch  # noqa: E402
-from moonshine_dictate.engine import BLOCK_FRAMES, MODEL_DIRS, SAMPLE_RATE  # noqa: E402
+from ototype.engine import BLOCK_FRAMES, MODEL_DIRS, SAMPLE_RATE  # noqa: E402
 
 COMPARE = ["small-streaming", "base", "tiny-streaming"]
 
@@ -33,7 +33,7 @@ COMPARE = ["small-streaming", "base", "tiny-streaming"]
 def record(seconds: float, device: str) -> np.ndarray:
     import sounddevice as sd
 
-    from moonshine_dictate.engine import find_input_device
+    from ototype.engine import find_input_device
 
     print(f"{seconds:.0f}秒間録音します。合図のあとに話してください。")
     for i in (3, 2, 1):

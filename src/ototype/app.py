@@ -10,23 +10,24 @@ from PySide6.QtCore import QObject, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication
 
-from moonshine_dictate import autostart, config, insert, sound
-from moonshine_dictate.engine import BUNDLED_ARCH, Engine, resolve_model
-from moonshine_dictate.ipc import CommandServer
-from moonshine_dictate.platform_info import config_path, is_wayland, log_path
-from moonshine_dictate.session import FINISHING, IDLE, LOADING, RECORDING, Session
-from moonshine_dictate.ui.native import activate_app, hide_dock_icon
-from moonshine_dictate.ui.overlay import RecordingOverlay
-from moonshine_dictate.ui.tray import Tray
+from ototype import autostart, config, insert, sound
+from ototype.migrate import migrate_old_settings
+from ototype.engine import BUNDLED_ARCH, Engine, resolve_model
+from ototype.ipc import CommandServer
+from ototype.platform_info import config_path, is_wayland, log_path
+from ototype.session import FINISHING, IDLE, LOADING, RECORDING, Session
+from ototype.ui.native import activate_app, hide_dock_icon
+from ototype.ui.overlay import RecordingOverlay
+from ototype.ui.tray import Tray
 
 log = logging.getLogger(__name__)
 
 LEVELS = {"error": logging.ERROR, "info": logging.INFO, "debug": logging.DEBUG}
 
 TOOLTIPS = {
-    LOADING: "moonshine-dictate: モデルを読み込んでいます",
-    IDLE: "moonshine-dictate: 待機中",
-    RECORDING: "moonshine-dictate: 録音中",
+    LOADING: "OtoType: モデルを読み込んでいます",
+    IDLE: "OtoType: 待機中",
+    RECORDING: "OtoType: 録音中",
 }
 
 
@@ -79,6 +80,8 @@ class DictateApp:
         hide_dock_icon()
         self._tray.show()
         first_run = not config_path().exists()  # 設定ファイルは初回の読み込みで作られる
+        if first_run and migrate_old_settings():
+            log.info("旧名 moonshine-dictate の設定を引き継ぎました")
         self.reload(initial=True)
         if first_run:
             QTimer.singleShot(0, self.show_welcome)
@@ -86,7 +89,7 @@ class DictateApp:
 
     def show_welcome(self) -> None:
         """使い方の画面を出す。画面で自動起動を切り替えたら、設定ファイルに保存する。"""
-        from moonshine_dictate.ui.welcome import WelcomeDialog
+        from ototype.ui.welcome import WelcomeDialog
 
         cfg = config.load(config_path())
         dialog = WelcomeDialog(cfg.hotkey, cfg.autostart)
@@ -153,8 +156,8 @@ class DictateApp:
             self._settings_dialog.raise_()
             self._settings_dialog.activateWindow()
             return
-        from moonshine_dictate.engine import available_models, list_input_devices
-        from moonshine_dictate.ui.settings import SettingsDialog
+        from ototype.engine import available_models, list_input_devices
+        from ototype.ui.settings import SettingsDialog
 
         cfg = config.load(config_path())
         dialog = SettingsDialog(cfg, available_models(cfg.model_dir), list_input_devices())
@@ -189,10 +192,10 @@ class DictateApp:
             self._hotkey = None
         if is_wayland():
             log.info("Wayland のため、ホットキーは登録しません。OS のショートカットに "
-                     "`moonshine-dictate toggle` を割り当ててください")
+                     "`ototype toggle` を割り当ててください")
             return
         try:
-            from moonshine_dictate.hotkey import HotkeyListener
+            from ototype.hotkey import HotkeyListener
 
             self._hotkey = HotkeyListener(combo, self._bridge.hotkey.emit)
             self._hotkey.start()
@@ -226,7 +229,7 @@ class DictateApp:
             self._load_model(self._pending_model)
             return
         tray_state = {RECORDING: "recording", IDLE: "idle"}.get(state, "busy")
-        self._tray.set_state(tray_state, TOOLTIPS.get(state, "moonshine-dictate"))
+        self._tray.set_state(tray_state, TOOLTIPS.get(state, "OtoType"))
 
     def _notify(self, message: str, error: bool = False) -> None:
         (log.warning if error else log.info)(message)

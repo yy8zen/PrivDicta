@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Callable, Protocol
 
-from moonshine_dictate.platform_info import IS_MACOS, is_wayland
+from ototype.platform_info import IS_MACOS, is_wayland
 
 
 class Inserter(Protocol):
@@ -23,12 +23,12 @@ def create(method: str, restore_clipboard: bool,
     notify: 利用者への通知を出す関数。
     """
     if is_wayland():
-        from moonshine_dictate.insert.wayland import WaylandInserter
+        from ototype.insert.wayland import WaylandInserter
 
         if method == "live":
             notify("Wayland ではライブ入力を使えないため、クリップボードで入力します")
         return WaylandInserter(notify)
-    from moonshine_dictate.insert.clipboard import ClipboardInserter
+    from ototype.insert.clipboard import ClipboardInserter
 
     if method == "live":
         if not IS_MACOS:
@@ -38,7 +38,7 @@ def create(method: str, restore_clipboard: bool,
             # - Linux（X11）: XTest で「こんにちは、世界。」が「こんんちはは世界界」になった（Xvfb 上の検証）
             # そのため、確定した区切りごとにクリップボード経由で貼り付ける
             return ClipboardInserter(restore_clipboard, wait_keys_released, live=True)
-        from moonshine_dictate.insert.live import LiveInserter
+        from ototype.insert.live import LiveInserter
 
         return LiveInserter(wait_keys_released)
     return ClipboardInserter(restore_clipboard, wait_keys_released)

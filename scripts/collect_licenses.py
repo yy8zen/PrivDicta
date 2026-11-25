@@ -2,7 +2,7 @@
 
     python scripts/collect_licenses.py <PyInstaller の _internal> <出力先> [同梱した最上位の名前の一覧]
 
-3つ目の引数は、moonshine-dictate.spec が書き出す build/bundled-top-level.txt。省略すると、依存関係の
+3つ目の引数は、ototype.spec が書き出す build/bundled-top-level.txt。省略すると、依存関係の
 宣言だけからパッケージを決める。
 
 PyInstaller で固めた後に実行する。出力先には次のものを作る。
@@ -30,14 +30,14 @@ from packaging.markers import default_environment
 from packaging.requirements import Requirement
 
 ROOT = Path(__file__).resolve().parents[1]
-PROJECT = "moonshine-dictate"
+PROJECT = "ototype"
 LICENSE_FILE = re.compile(r"(LICEN[CS]E|COPYING|NOTICE|AUTHORS|COPYRIGHT)", re.I)
-# LGPL のパッケージ。利用者が差し替えられるよう、.py のまま同梱している（moonshine-dictate.spec）
+# LGPL のパッケージ。利用者が差し替えられるよう、.py のまま同梱している（ototype.spec）
 LGPL = {"pyside6-essentials", "shiboken6", "pynput", "python-xlib"}
 
 
 def runtime_distributions(bundled_tops: list[str] | None = None) -> list[metadata.Distribution]:
-    """moonshine-dictate の実行時の依存パッケージ（推移的に全部）と、実際に同梱した最上位の名前を持つパッケージ。"""
+    """ototype の実行時の依存パッケージ（推移的に全部）と、実際に同梱した最上位の名前を持つパッケージ。"""
     env = default_environment()
     seen: dict[str, metadata.Distribution] = {}
     stack = [PROJECT]
@@ -177,7 +177,7 @@ def write_notices(out: Path, py_rows, missing, python_version, static_files, lin
     lines = [
         "# サードパーティのソフトウェアとライセンス",
         "",
-        f"この一覧は moonshine-dictate の配布物に同梱しているソフトウェアのものです（{date.today():%Y-%m-%d} にビルド時に自動生成）。",
+        f"この一覧は ototype の配布物に同梱しているソフトウェアのものです（{date.today():%Y-%m-%d} にビルド時に自動生成）。",
         "各ライセンスの本文は、このファイルと同じフォルダの `python/`、`other/`、`linux/` にあります。",
         "",
         "## 音声認識モデル",

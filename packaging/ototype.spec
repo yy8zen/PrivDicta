@@ -1,6 +1,6 @@
 # PyInstaller の設定。リポジトリのルートで次のように実行する。
 #   python scripts/fetch_model.py base
-#   pyinstaller packaging/moonshine-dictate.spec
+#   pyinstaller packaging/ototype.spec
 # -*- mode: python -*-
 
 import sys
@@ -27,7 +27,7 @@ for name in MODELS:
 datas += collect_data_files("moonshine_voice", excludes=["**/*.wav", "assets/tiny-en/**"])
 
 a = Analysis(
-    [str(ROOT / "src" / "moonshine_dictate" / "__main__.py")],
+    [str(ROOT / "src" / "ototype" / "__main__.py")],
     pathex=[str(ROOT / "src")],
     binaries=collect_dynamic_libs("moonshine_voice"),
     datas=datas,
@@ -84,17 +84,17 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="moonshine-dictate",
+    name="OtoType",
     console=False,
     # macOS の署名は行わない（要件 R1.3）。BUNDLE の後にアドホック署名する
 )
-coll = COLLECT(exe, a.binaries, a.datas, name="moonshine-dictate")
+coll = COLLECT(exe, a.binaries, a.datas, name="OtoType")
 
 if sys.platform == "darwin":
     app = BUNDLE(
         coll,
-        name="moonshine-dictate.app",
-        bundle_identifier="io.github.moonshine-dictate",
+        name="OtoType.app",
+        bundle_identifier="io.github.ototype",
         info_plist={
             "LSUIElement": True,  # Dock に出さず、メニューバーだけに常駐する
             "NSMicrophoneUsageDescription": "音声入力のためにマイクを使います。音声は外部に送信しません。",

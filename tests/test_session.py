@@ -1,6 +1,6 @@
 from PySide6.QtCore import QObject, Signal
 
-from moonshine_dictate.session import FINISHING, IDLE, LOADING, RECORDING, Session
+from ototype.session import FINISHING, IDLE, LOADING, RECORDING, Session
 from tests.conftest import process_events
 
 

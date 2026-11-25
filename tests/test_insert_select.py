@@ -1,6 +1,6 @@
 import pytest
 
-from moonshine_dictate import insert
+from ototype import insert
 
 
 @pytest.mark.parametrize("is_macos, expected", [(False, "ClipboardInserter"), (True, "LiveInserter")])
@@ -9,7 +9,7 @@ def test_live_method_per_os(qapp, monkeypatch, is_macos, expected):
     monkeypatch.setattr(insert, "is_wayland", lambda: False)
     if expected == "LiveInserter":
         # pynput の Controller は X サーバーがないと作れないので、偽物に差し替える
-        import moonshine_dictate.insert.live as live
+        import ototype.insert.live as live
 
         monkeypatch.setattr(live, "LiveInserter",
                             type("LiveInserter", (), {"live": True,

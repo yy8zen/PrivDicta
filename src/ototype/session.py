@@ -11,7 +11,7 @@ from typing import Callable, Protocol
 
 from PySide6.QtCore import QObject, QTimer, Signal
 
-from moonshine_dictate.text import join_lines, postprocess
+from ototype.text import join_lines, postprocess
 
 log = logging.getLogger(__name__)
 

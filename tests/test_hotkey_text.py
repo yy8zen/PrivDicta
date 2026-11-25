@@ -1,7 +1,7 @@
 import pytest
 
-from moonshine_dictate.hotkey import parse_hotkey
-from moonshine_dictate.text import apply_replace, join_lines
+from ototype.hotkey import parse_hotkey
+from ototype.text import apply_replace, join_lines
 
 
 @pytest.mark.parametrize("text, expected", [

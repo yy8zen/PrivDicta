@@ -8,7 +8,7 @@ from typing import Callable
 from PySide6.QtCore import QMimeData, QTimer
 from PySide6.QtGui import QGuiApplication
 
-from moonshine_dictate.platform_info import IS_MACOS
+from ototype.platform_info import IS_MACOS
 
 log = logging.getLogger(__name__)
 
