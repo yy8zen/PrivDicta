@@ -1,6 +1,9 @@
 """配布物に入るサードパーティのソフトウェアのライセンスを集める（要件 R7.4）。
 
-    python scripts/collect_licenses.py <PyInstaller の _internal> <出力先>
+    python scripts/collect_licenses.py <PyInstaller の _internal> <出力先> [同梱した最上位の名前の一覧]
+
+3つ目の引数は、moonshine-dictate.spec が書き出す build/bundled-top-level.txt。省略すると、依存関係の
+宣言だけからパッケージを決める。
 
 PyInstaller で固めた後に実行する。出力先には次のものを作る。
 - THIRD-PARTY-NOTICES.md : 同梱しているソフトウェアとライセンス、ソースの入手先の一覧
@@ -33,11 +36,15 @@ LICENSE_FILE = re.compile(r"(LICEN[CS]E|COPYING|NOTICE|AUTHORS|COPYRIGHT)", re.I
 LGPL = {"pyside6-essentials", "shiboken6", "pynput", "python-xlib"}
 
 
-def runtime_distributions() -> list[metadata.Distribution]:
-    """moonshine-dictate の実行時の依存パッケージ（推移的に全部）。"""
+def runtime_distributions(bundled_tops: list[str] | None = None) -> list[metadata.Distribution]:
+    """moonshine-dictate の実行時の依存パッケージ（推移的に全部）と、実際に同梱した最上位の名前を持つパッケージ。"""
     env = default_environment()
     seen: dict[str, metadata.Distribution] = {}
     stack = [PROJECT]
+    if bundled_tops:
+        owners = metadata.packages_distributions()
+        for top in bundled_tops:
+            stack.extend(owners.get(top, []))
     while stack:
         name = stack.pop()
         key = name.lower().replace("_", "-")
@@ -69,9 +76,9 @@ def license_of(dist: metadata.Distribution) -> str:
     return text.splitlines()[0][:80] if text else "不明"
 
 
-def copy_python_licenses(out: Path) -> tuple[list[dict], list[str]]:
+def copy_python_licenses(out: Path, bundled_tops: list[str] | None = None) -> tuple[list[dict], list[str]]:
     rows, missing = [], []
-    for dist in runtime_distributions():
+    for dist in runtime_distributions(bundled_tops):
         name, version = dist.metadata["Name"], dist.version
         dest = out / "python" / f"{name}-{version}"
         copied = []
@@ -236,14 +243,17 @@ def write_notices(out: Path, py_rows, missing, python_version, static_files, lin
 
 def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(errors="replace")
-    if len(argv) != 2:
+    if len(argv) not in (2, 3):
         print(__doc__)
         return 2
     bundle, out = Path(argv[0]), Path(argv[1])
+    bundled_tops = None
+    if len(argv) == 3:
+        bundled_tops = [t for t in Path(argv[2]).read_text(encoding="utf-8").split() if t]
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    py_rows, missing = copy_python_licenses(out)
+    py_rows, missing = copy_python_licenses(out, bundled_tops)
     python_version = copy_python_runtime_license(out)
     static_files = copy_static_licenses(out)
     linux_rows, _ = linux_system_packages(bundle, out) if bundle.is_dir() else ([], [])

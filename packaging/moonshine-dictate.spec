@@ -34,7 +34,9 @@ a = Analysis(
     hiddenimports=["pynput.keyboard._win32", "pynput.keyboard._darwin", "pynput.keyboard._xorg",
                    "pynput.mouse._win32", "pynput.mouse._darwin", "pynput.mouse._xorg"],
     # moonshine_voice のうち、音声入力に使わない機能（TTS、LoRA 学習など）の依存は入れない
-    excludes=["torch", "transformers", "tkinter", "matplotlib"],
+    # setuptools などは実行時に使わない（2026年11月に確認）。使わないものとそのライセンスを抱えない
+    excludes=["torch", "transformers", "tkinter", "matplotlib",
+              "setuptools", "pkg_resources", "distutils", "_distutils_hack"],
     # LGPL の Python パッケージは、利用者が差し替えられるように .py のまま同梱する（要件 R7.4）
     module_collection_mode={"pynput": "py", "Xlib": "py", "PySide6": "py", "shiboken6": "py"},
 )
@@ -47,6 +49,33 @@ if sys.platform.startswith("linux"):
                 "libpixman", "libharfbuzz", "libgraphite2", "libjpeg")
     a.binaries = [b for b in a.binaries
                   if not Path(b[0]).name.startswith(GTK_ONLY)]
+
+# sounddevice は、全 OS 向けの PortAudio を同梱している。使うのは、その OS の64bit版の1つだけ。
+# ASIO 版は Steinberg の ASIO SDK を使って作られており、PortAudio 本体（MIT）とは再配布の条件が違うため入れない
+def _keep_portaudio(dest: str) -> bool:
+    if "portaudio-binaries" not in dest.replace("\\", "/"):
+        return True
+    name = Path(dest).name
+    if name.endswith(".md"):
+        return True
+    if "asio" in name:
+        return False
+    if sys.platform == "win32":
+        return name == "libportaudio64bit.dll"
+    if sys.platform == "darwin":
+        return name.endswith(".dylib")
+    return False
+
+
+a.binaries = [b for b in a.binaries if _keep_portaudio(b[0])]
+a.datas = [d for d in a.datas if _keep_portaudio(d[0])]
+
+# 同梱したモジュールとファイルの最上位の名前を書き出す。scripts/collect_licenses.py が、
+# 依存関係の宣言に出てこないパッケージのライセンスも取りこぼさないように使う
+_tops = {entry[0].split(".")[0] for entry in a.pure}
+_tops |= {Path(entry[0]).parts[0] for entry in a.datas + a.binaries}
+(ROOT / "build").mkdir(exist_ok=True)
+(ROOT / "build" / "bundled-top-level.txt").write_text("\n".join(sorted(_tops)), encoding="utf-8")
 
 pyz = PYZ(a.pure)
 

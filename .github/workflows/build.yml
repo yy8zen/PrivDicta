@@ -76,7 +76,7 @@ jobs:
       - name: サードパーティのライセンスを集めて同梱する
         shell: bash
         run: |
-          python scripts/collect_licenses.py dist/moonshine-dictate/_internal build/third_party_licenses
+          python scripts/collect_licenses.py dist/moonshine-dictate/_internal build/third_party_licenses build/bundled-top-level.txt
           if [ -d dist/moonshine-dictate.app ]; then
             cp -R build/third_party_licenses dist/moonshine-dictate.app/Contents/Resources/
           else
