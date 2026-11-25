@@ -1,8 +1,8 @@
 """同梱する日本語モデルを models/ にダウンロードする（ビルド前に1回実行する）。
 
-    python scripts/fetch_model.py                # small-streaming-ja（同梱する標準のモデル）
-    python scripts/fetch_model.py tiny-streaming # tiny-streaming-ja
-    python scripts/fetch_model.py base           # base-ja（ストリーミング非対応）
+    python scripts/fetch_model.py                 # base-ja（同梱する標準のモデル）
+    python scripts/fetch_model.py small-streaming # small-streaming-ja
+    python scripts/fetch_model.py tiny-streaming  # tiny-streaming-ja
 
 アプリ本体はネットワーク通信をしない（要件 R2.3）。ダウンロードはこのスクリプトだけが行う。
 """
@@ -40,7 +40,7 @@ def fetch(arch_key: str, force: bool = True) -> Path:
 def main(argv: list[str]) -> int:
     # Windows のコンソール（cp1252 など）でも日本語のメッセージで落ちないようにする
     sys.stdout.reconfigure(errors="replace")
-    arch_key = argv[0] if argv else "small-streaming"
+    arch_key = argv[0] if argv else "base"
     if arch_key not in MODEL_DIRS:
         print(f"モデルの種類は {', '.join(MODEL_DIRS)} のどれかを指定してください")
         return 2

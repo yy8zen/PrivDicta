@@ -124,3 +124,14 @@ def test_mic_failure_keeps_idle(qapp):
     assert session.state == IDLE
     assert "no mic" in notes[-1]
     assert sounds == ["error"]
+
+
+def test_postprocess_applied_to_inserted_text(qapp):
+    session, engine, _, inserter, _, _ = make()
+    session.configure(inserter, {}, "mic", True, 60, "add")
+    engine.loaded.emit()
+    session.start()
+    engine.line_completed.emit(1, "そ の 中 で")
+    session.stop()
+    engine.finished.emit()
+    assert inserter.texts == ["その中で。"]

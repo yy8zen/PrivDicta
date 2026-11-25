@@ -28,7 +28,7 @@ MODEL_DIRS = {
     # ストリーミング非対応。区切りが確定するまで途中結果は出ないが、Small Streaming より大きい
     "base": ("base-ja", "BASE"),
 }
-BUNDLED_ARCH = "small-streaming"
+BUNDLED_ARCH = "base"  # 配布物に同梱するモデル
 
 
 @dataclass
@@ -61,6 +61,26 @@ def find_input_device(name: str):
         if dev.get("max_input_channels", 0) > 0 and needle in dev.get("name", "").lower():
             return index
     raise LookupError(f"マイク {name!r} が見つかりません")
+
+
+def list_input_devices() -> list[str]:
+    """マイクの名前の一覧。Windows では同じマイクが API ごとに並ぶので、重複を除く。"""
+    try:
+        import sounddevice as sd
+
+        names = [d.get("name", "") for d in sd.query_devices() if d.get("max_input_channels", 0) > 0]
+    except Exception:
+        log.exception("マイクの一覧を取得できませんでした")
+        return []
+    return list(dict.fromkeys(n for n in names if n))
+
+
+def available_models(model_dir: str = "") -> list[str]:
+    """ディスクにあって選べるモデルの種類。model_dir を指定した場合は、全種類を選べることにする。"""
+    if model_dir:
+        return list(MODEL_DIRS)
+    return [key for key, (dirname, _) in MODEL_DIRS.items()
+            if (resource_root() / "models" / dirname).is_dir()]
 
 
 class Engine(QObject):

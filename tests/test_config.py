@@ -4,7 +4,7 @@ from moonshine_dictate import config
 
 
 def test_template_parses_to_defaults():
-    raw = tomllib.loads(config.TEMPLATE.format(hotkey=config.default_hotkey()))
+    raw = tomllib.loads(config.render(config.Config()))
     cfg = config.parse(raw)
     assert cfg.errors == []
     assert cfg == config.Config()
