@@ -71,7 +71,18 @@ jobs:
         run: |
           python scripts/fetch_model.py base
       - name: PyInstaller で固める
-        run: pyinstaller --noconfirm packaging/moonshine-dictate.spec
+        run: pyinstaller --noconfirm packaging/privdicta.spec
+
+      - name: サードパーティのライセンスを集めて同梱する
+        shell: bash
+        run: |
+          python scripts/collect_licenses.py dist/PrivDicta/_internal build/third_party_licenses build/bundled-top-level.txt
+          if [ -d dist/PrivDicta.app ]; then
+            cp -R build/third_party_licenses dist/PrivDicta.app/Contents/Resources/
+          else
+            cp -R build/third_party_licenses dist/PrivDicta/
+          fi
+          cp build/third_party_licenses/THIRD-PARTY-NOTICES.md "dist/THIRD-PARTY-NOTICES-${{ matrix.name }}.md"
 
       - name: Windows のインストーラーを作る
         if: runner.os == 'Windows'
@@ -86,15 +97,16 @@ jobs:
       - name: macOS の dmg を作る（アドホック署名）
         if: runner.os == 'macOS'
         run: |
-          codesign --force --deep --sign - dist/moonshine-dictate.app
+          codesign --force --deep --sign - dist/PrivDicta.app
           # dmg にはアプリのほか、Applications へのリンクと使い方、ライセンスを入れる
           mkdir -p build/dmg
-          cp -R dist/moonshine-dictate.app build/dmg/
+          cp -R dist/PrivDicta.app build/dmg/
           ln -s /Applications build/dmg/Applications
           cp docs/user-guide.md "build/dmg/使い方.md"
           cp packaging/NOTICE.txt packaging/MOONSHINE-LICENSE.txt build/dmg/
-          hdiutil create -volname moonshine-dictate -srcfolder build/dmg \
-            -ov -format UDZO "dist/moonshine-dictate-${VERSION}-${{ matrix.name }}.dmg"
+          cp -R build/third_party_licenses build/dmg/
+          hdiutil create -volname PrivDicta -srcfolder build/dmg \
+            -ov -format UDZO "dist/privdicta-${VERSION}-${{ matrix.name }}.dmg"
 
       - name: Linux の AppImage を作る
         if: runner.os == 'Linux'
@@ -112,7 +124,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: moonshine-dictate-${{ matrix.name }}
+          name: privdicta-${{ matrix.name }}
           path: |
             dist/*.exe
             dist/*.dmg

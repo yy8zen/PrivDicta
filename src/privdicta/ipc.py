@@ -21,7 +21,7 @@ TIMEOUT_MS = 2000
 
 def server_name() -> str:
     user = re.sub(r"[^A-Za-z0-9_.-]", "_", getpass.getuser() or "user")
-    return f"moonshine-dictate-{user}"
+    return f"privdicta-{user}"
 
 
 def send(command: str) -> str | None:

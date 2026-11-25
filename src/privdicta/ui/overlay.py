@@ -6,8 +6,8 @@ from PySide6.QtCore import QPoint, QRectF, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QCursor, QFontMetrics, QGuiApplication, QPainter
 from PySide6.QtWidgets import QAbstractButton, QHBoxLayout, QLabel, QWidget
 
-from moonshine_dictate.ui import icons
-from moonshine_dictate.ui.native import make_non_activating
+from privdicta.ui import icons
+from privdicta.ui.native import make_non_activating
 
 TEXT_WIDTH = 420
 MARGIN_BOTTOM = 72

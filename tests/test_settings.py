@@ -3,9 +3,9 @@ import tomllib
 import pytest
 from PySide6.QtCore import Qt
 
-from moonshine_dictate import config
-from moonshine_dictate.session import BROKEN, IDLE, LOADING
-from moonshine_dictate.ui.settings import SettingsDialog, key_event_to_hotkey
+from privdicta import config
+from privdicta.session import BROKEN, IDLE, LOADING
+from privdicta.ui.settings import SettingsDialog, key_event_to_hotkey
 from tests.test_session import make
 
 
@@ -106,7 +106,7 @@ def test_base_is_default_model():
 
 
 def test_welcome_dialog_builds(qapp):
-    from moonshine_dictate.ui.welcome import POWERED_BY, WelcomeDialog, build_html
+    from privdicta.ui.welcome import POWERED_BY, WelcomeDialog, build_html
 
     html = build_html("ctrl+alt+space")
     assert "Ctrl + Alt + Space" in html

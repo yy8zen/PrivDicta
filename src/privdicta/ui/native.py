@@ -11,7 +11,7 @@ import logging
 
 from PySide6.QtWidgets import QWidget
 
-from moonshine_dictate.platform_info import IS_MACOS, IS_WINDOWS
+from privdicta.platform_info import IS_MACOS, IS_WINDOWS
 
 log = logging.getLogger(__name__)
 

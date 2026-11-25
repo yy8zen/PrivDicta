@@ -25,9 +25,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from moonshine_dictate.config import LOG_LEVELS, Config
-from moonshine_dictate.hotkey import parse_hotkey
-from moonshine_dictate.platform_info import IS_MACOS
+from privdicta.config import LOG_LEVELS, Config
+from privdicta.hotkey import parse_hotkey
+from privdicta.platform_info import IS_MACOS
 
 MODEL_LABELS = {
     "base": "base（標準。区切りが確定してから文字が出る）",
@@ -141,7 +141,7 @@ class SettingsDialog(QDialog):
     def __init__(self, cfg: Config, models: list[str], devices: list[str],
                  parent: QWidget | None = None):
         super().__init__(parent)
-        self.setWindowTitle("moonshine-dictate の設定")
+        self.setWindowTitle("PrivDicta の設定")
         self.setMinimumWidth(520)
         self._base = cfg
 

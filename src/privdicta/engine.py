@@ -14,7 +14,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QObject, Signal
 
-from moonshine_dictate.platform_info import resource_root
+from privdicta.platform_info import resource_root
 
 log = logging.getLogger(__name__)
 

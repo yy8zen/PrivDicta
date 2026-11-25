@@ -18,7 +18,7 @@ def main(out: str) -> int:
     from PySide6.QtCore import QRectF, Qt
     from PySide6.QtGui import QColor, QGuiApplication, QPainter, QPixmap
 
-    from moonshine_dictate.ui import icons
+    from privdicta.ui import icons
 
     _app = QGuiApplication([])
     size = 256

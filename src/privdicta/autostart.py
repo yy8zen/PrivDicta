@@ -7,19 +7,19 @@ import shlex
 import sys
 from pathlib import Path
 
-from moonshine_dictate.platform_info import IS_MACOS, IS_WINDOWS
+from privdicta.platform_info import IS_MACOS, IS_WINDOWS
 
 log = logging.getLogger(__name__)
 
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
-VALUE_NAME = "moonshine-dictate"
-MAC_LABEL = "io.github.moonshine-dictate"
+VALUE_NAME = "PrivDicta"
+MAC_LABEL = "io.github.privdicta"
 
 
 def launch_command() -> list[str]:
     if getattr(sys, "frozen", False):
         return [sys.executable]
-    return [sys.executable, "-m", "moonshine_dictate"]
+    return [sys.executable, "-m", "privdicta"]
 
 
 def apply(enabled: bool) -> None:
@@ -66,11 +66,11 @@ def _linux(enabled: bool) -> None:
     import os
 
     base = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
-    path = base / "autostart" / "moonshine-dictate.desktop"
+    path = base / "autostart" / "privdicta.desktop"
     if enabled:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(
-            "[Desktop Entry]\nType=Application\nName=moonshine-dictate\n"
+            "[Desktop Entry]\nType=Application\nName=PrivDicta\n"
             f"Exec={shlex.join(launch_command())}\nX-GNOME-Autostart-enabled=true\n",
             encoding="utf-8",
         )

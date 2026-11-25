@@ -1,6 +1,6 @@
 import tomllib
 
-from moonshine_dictate import config
+from privdicta import config
 
 
 def test_template_parses_to_defaults():
@@ -45,3 +45,18 @@ def test_replace_table():
     cfg = config.parse({"replace": {"でぃすこーど": "Discord", "x": 1}})
     assert cfg.replace == {"でぃすこーど": "Discord"}
     assert len(cfg.errors) == 1
+
+
+def test_migrate_old_settings(tmp_path, monkeypatch):
+    from privdicta import migrate
+
+    new_dir = tmp_path / "privdicta"
+    old_dir = tmp_path / "moonshine-dictate"
+    old_dir.mkdir()
+    (old_dir / "config.toml").write_text('hotkey = "f9"\n', encoding="utf-8")
+    monkeypatch.setattr(migrate, "config_dir", lambda: new_dir)
+    monkeypatch.setattr(migrate, "_remove_old_autostart", lambda: None)
+    assert migrate.migrate_old_settings() is True
+    assert config.load(new_dir / "config.toml").hotkey == "f9"
+    # 2回目は、新しい設定があるので何もしない
+    assert migrate.migrate_old_settings() is False
