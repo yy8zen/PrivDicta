@@ -105,7 +105,7 @@ class Engine(QObject):
         self._transcriber = None
         self._commands: queue.Queue = queue.Queue()
         self._audio_stream = None
-        self._worker = threading.Thread(target=self._run, name="moonshine-engine", daemon=True)
+        self._worker = threading.Thread(target=self._run, name="privdicta-engine", daemon=True)
         self._worker.start()
 
     # ---- UI スレッドから呼ぶ ----
