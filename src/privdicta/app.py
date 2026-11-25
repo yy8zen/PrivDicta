@@ -10,24 +10,24 @@ from PySide6.QtCore import QObject, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication
 
-from ototype import autostart, config, insert, sound
-from ototype.migrate import migrate_old_settings
-from ototype.engine import BUNDLED_ARCH, Engine, resolve_model
-from ototype.ipc import CommandServer
-from ototype.platform_info import config_path, is_wayland, log_path
-from ototype.session import FINISHING, IDLE, LOADING, RECORDING, Session
-from ototype.ui.native import activate_app, hide_dock_icon
-from ototype.ui.overlay import RecordingOverlay
-from ototype.ui.tray import Tray
+from privdicta import autostart, config, insert, sound
+from privdicta.migrate import migrate_old_settings
+from privdicta.engine import BUNDLED_ARCH, Engine, resolve_model
+from privdicta.ipc import CommandServer
+from privdicta.platform_info import config_path, is_wayland, log_path
+from privdicta.session import FINISHING, IDLE, LOADING, RECORDING, Session
+from privdicta.ui.native import activate_app, hide_dock_icon
+from privdicta.ui.overlay import RecordingOverlay
+from privdicta.ui.tray import Tray
 
 log = logging.getLogger(__name__)
 
 LEVELS = {"error": logging.ERROR, "info": logging.INFO, "debug": logging.DEBUG}
 
 TOOLTIPS = {
-    LOADING: "OtoType: モデルを読み込んでいます",
-    IDLE: "OtoType: 待機中",
-    RECORDING: "OtoType: 録音中",
+    LOADING: "PrivDicta: モデルを読み込んでいます",
+    IDLE: "PrivDicta: 待機中",
+    RECORDING: "PrivDicta: 録音中",
 }
 
 
@@ -89,7 +89,7 @@ class DictateApp:
 
     def show_welcome(self) -> None:
         """使い方の画面を出す。画面で自動起動を切り替えたら、設定ファイルに保存する。"""
-        from ototype.ui.welcome import WelcomeDialog
+        from privdicta.ui.welcome import WelcomeDialog
 
         cfg = config.load(config_path())
         dialog = WelcomeDialog(cfg.hotkey, cfg.autostart)
@@ -156,8 +156,8 @@ class DictateApp:
             self._settings_dialog.raise_()
             self._settings_dialog.activateWindow()
             return
-        from ototype.engine import available_models, list_input_devices
-        from ototype.ui.settings import SettingsDialog
+        from privdicta.engine import available_models, list_input_devices
+        from privdicta.ui.settings import SettingsDialog
 
         cfg = config.load(config_path())
         dialog = SettingsDialog(cfg, available_models(cfg.model_dir), list_input_devices())
@@ -192,10 +192,10 @@ class DictateApp:
             self._hotkey = None
         if is_wayland():
             log.info("Wayland のため、ホットキーは登録しません。OS のショートカットに "
-                     "`ototype toggle` を割り当ててください")
+                     "`privdicta toggle` を割り当ててください")
             return
         try:
-            from ototype.hotkey import HotkeyListener
+            from privdicta.hotkey import HotkeyListener
 
             self._hotkey = HotkeyListener(combo, self._bridge.hotkey.emit)
             self._hotkey.start()
@@ -229,7 +229,7 @@ class DictateApp:
             self._load_model(self._pending_model)
             return
         tray_state = {RECORDING: "recording", IDLE: "idle"}.get(state, "busy")
-        self._tray.set_state(tray_state, TOOLTIPS.get(state, "OtoType"))
+        self._tray.set_state(tray_state, TOOLTIPS.get(state, "PrivDicta"))
 
     def _notify(self, message: str, error: bool = False) -> None:
         (log.warning if error else log.info)(message)

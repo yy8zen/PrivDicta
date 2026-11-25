@@ -1,6 +1,6 @@
 import pytest
 
-from ototype.text import apply_punctuation, normalize_spaces, postprocess
+from privdicta.text import apply_punctuation, normalize_spaces, postprocess
 
 # 2026年11月、Windows 11 の実機で base モデルが出力した文の一部
 REAL_OUTPUT = [

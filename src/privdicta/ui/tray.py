@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
-from ototype.ui import icons
+from privdicta.ui import icons
 
 
 class Tray(QObject):
@@ -48,7 +48,7 @@ class Tray(QObject):
         self._menu.addAction(quit_action)
         self._tray.setContextMenu(self._menu)
         self._tray.activated.connect(self._on_activated)
-        self.set_state("busy", "OtoType: モデルを読み込んでいます")
+        self.set_state("busy", "PrivDicta: モデルを読み込んでいます")
 
     def show(self) -> None:
         self._tray.show()
@@ -64,7 +64,7 @@ class Tray(QObject):
 
     def notify(self, message: str, error: bool = False) -> None:
         icon = QSystemTrayIcon.Warning if error else QSystemTrayIcon.Information
-        self._tray.showMessage("OtoType", message, icon, 6000)
+        self._tray.showMessage("PrivDicta", message, icon, 6000)
 
     def _on_activated(self, reason) -> None:
         # Windows と Linux では左クリックで録音を切り替える。macOS はクリックでメニューが開く

@@ -11,7 +11,7 @@ import os
 import shutil
 from pathlib import Path
 
-from ototype.platform_info import IS_MACOS, IS_WINDOWS, config_dir
+from privdicta.platform_info import IS_MACOS, IS_WINDOWS, config_dir
 
 log = logging.getLogger(__name__)
 

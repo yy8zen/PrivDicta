@@ -1,4 +1,4 @@
-# OtoType の使い方
+# PrivDicta の使い方
 
 話した日本語を、カーソルのある場所に入力するアプリです。音声の認識はすべてこの PC の中で行い、インターネットには接続しません。
 
@@ -8,14 +8,14 @@ Powered by Moonshine AI
 
 ### Windows
 
-1. `ototype-<バージョン>-windows-setup.exe` を実行します。管理者権限は要りません。
+1. `privdicta-<バージョン>-windows-setup.exe` を実行します。管理者権限は要りません。
 2. 「Windows によって PC が保護されました」と表示されたら、「詳細情報」を押してから「実行」を押します。このアプリには電子署名がないため表示されます。
 3. 「アプリケーション制御ポリシーによってこのファイルがブロックされました」と表示された場合は、もう一度実行してみてください。何度実行しても止められる場合は、「Windows セキュリティ > アプリとブラウザーの制御 > スマート アプリ コントロール」がオンになっています。このアプリを使うには、オフにする必要があります。
 
 ### macOS（Apple Silicon の Mac のみ）
 
-1. `ototype-<バージョン>-macos-arm64.dmg` を開き、`OtoType.app` を「Applications」フォルダにドラッグします。
-2. 「アプリケーション」フォルダで OtoType を右クリックし、「開く」を選びます。開けない場合は、一度ダブルクリックして警告を閉じてから、「システム設定 > プライバシーとセキュリティ」の下にある「このまま開く」を押します。このアプリは Apple の署名と公証を受けていないため、この手順が要ります。
+1. `privdicta-<バージョン>-macos-arm64.dmg` を開き、`PrivDicta.app` を「Applications」フォルダにドラッグします。
+2. 「アプリケーション」フォルダで PrivDicta を右クリックし、「開く」を選びます。開けない場合は、一度ダブルクリックして警告を閉じてから、「システム設定 > プライバシーとセキュリティ」の下にある「このまま開く」を押します。このアプリは Apple の署名と公証を受けていないため、この手順が要ります。
 3. 「マイク」と「アクセシビリティ」の許可を求められたら、許可します。アクセシビリティは、ホットキーの検出と文字の入力に使います。
 
 ### Linux
@@ -23,8 +23,8 @@ Powered by Moonshine AI
 1. AppImage に実行権限を付けて実行します。
 
    ```
-   chmod +x ototype-*-linux-x86_64.AppImage
-   ./ototype-*-linux-x86_64.AppImage
+   chmod +x privdicta-*-linux-x86_64.AppImage
+   ./privdicta-*-linux-x86_64.AppImage
    ```
 
 2. 「libfuse.so.2 が見つからない」と表示されたら、Ubuntu 24.04 では `sudo apt install libfuse2t64`、22.04 では `sudo apt install libfuse2` を実行します。
@@ -55,8 +55,8 @@ Powered by Moonshine AI
 
 ## 次に起動するとき
 
-- Windows：スタートメニューの「OtoType」
-- macOS：「アプリケーション」フォルダの OtoType
+- Windows：スタートメニューの「PrivDicta」
+- macOS：「アプリケーション」フォルダの PrivDicta
 - Linux：AppImage のファイルを実行
 
 設定で「ログインしたときに自動で起動する」をオンにしておくと、起動の操作は要りません。
@@ -67,24 +67,24 @@ Powered by Moonshine AI
 
 ## アンインストールする
 
-- **Windows：**「設定 > アプリ > インストールされているアプリ」で OtoType の「…」から「アンインストール」を選びます。
-- **macOS：** アプリを終了し、「アプリケーション」フォルダの OtoType をゴミ箱に入れます。「システム設定 > プライバシーとセキュリティ > アクセシビリティ」の一覧からも削除します。
+- **Windows：**「設定 > アプリ > インストールされているアプリ」で PrivDicta の「…」から「アンインストール」を選びます。
+- **macOS：** アプリを終了し、「アプリケーション」フォルダの PrivDicta をゴミ箱に入れます。「システム設定 > プライバシーとセキュリティ > アクセシビリティ」の一覧からも削除します。
 - **Linux：** アプリを終了し、AppImage のファイルを削除します。
 
 設定とログは次のフォルダに残ります。不要なら削除してください。
 
 | OS | フォルダ |
 | --- | --- |
-| Windows | `%APPDATA%\ototype` |
-| macOS | `~/Library/Application Support/ototype` |
-| Linux | `~/.config/ototype` |
+| Windows | `%APPDATA%\privdicta` |
+| macOS | `~/Library/Application Support/privdicta` |
+| Linux | `~/.config/privdicta` |
 
 ## うまく動かないとき
 
-上のフォルダにある `ototype.log` に、動作の記録が残っています。不具合を報告するときは、このファイルの内容を添えてください。
+上のフォルダにある `privdicta.log` に、動作の記録が残っています。不具合を報告するときは、このファイルの内容を添えてください。
 
 ## ライセンス
 
-- OtoType のソースコードは MIT License です。
+- PrivDicta のソースコードは MIT License です。
 - 同梱している日本語の音声認識モデル（base-ja）は、Moonshine AI Community License のもとで配布しています。全文は `MOONSHINE-LICENSE.txt`、帰属表示は `NOTICE.txt` にあります。
 - そのほかに同梱しているソフトウェア（Qt / PySide6、pynput、numpy、ONNX Runtime など）のライセンスと、ソースコードの入手先は、`third_party_licenses` フォルダの `THIRD-PARTY-NOTICES.md` にあります。Windows ではインストール先のフォルダ、macOS では dmg の中とアプリの `Contents/Resources` にあります。

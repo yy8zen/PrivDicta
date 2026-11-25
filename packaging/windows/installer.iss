@@ -8,14 +8,14 @@
 
 [Setup]
 AppId={{0BDBFCFA-FCB3-4F6E-85BE-8038513EF67A}
-AppName=OtoType
+AppName=PrivDicta
 AppVersion={#AppVersion}
-DefaultDirName={localappdata}\Programs\OtoType
-DefaultGroupName=OtoType
+DefaultDirName={localappdata}\Programs\PrivDicta
+DefaultGroupName=PrivDicta
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=..\..\dist
-OutputBaseFilename=ototype-{#AppVersion}-windows-setup
+OutputBaseFilename=privdicta-{#AppVersion}-windows-setup
 Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -25,7 +25,7 @@ LicenseFile=..\..\LICENSE
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Files]
-Source: "..\..\dist\OtoType\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "..\..\dist\PrivDicta\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 ; ライセンス全文、帰属表示、使い方をインストール先の直下にも置く（要件 R7.2）
 Source: "..\..\docs\user-guide.md"; DestDir: "{app}"; DestName: "使い方.md"
 Source: "..\NOTICE.txt"; DestDir: "{app}"
@@ -33,15 +33,15 @@ Source: "..\MOONSHINE-LICENSE.txt"; DestDir: "{app}"
 Source: "..\..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"
 
 [Icons]
-Name: "{group}\OtoType"; Filename: "{app}\OtoType.exe"
-Name: "{group}\OtoType の使い方"; Filename: "{app}\使い方.md"
+Name: "{group}\PrivDicta"; Filename: "{app}\PrivDicta.exe"
+Name: "{group}\PrivDicta の使い方"; Filename: "{app}\使い方.md"
 
 [Registry]
 ; 設定の「ログインしたときに自動で起動する」が書いた値を、アンインストール時に消す
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: none; ValueName: "OtoType"; Flags: uninsdeletevalue dontcreatekey
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: none; ValueName: "PrivDicta"; Flags: uninsdeletevalue dontcreatekey
 
 [Run]
-Filename: "{app}\OtoType.exe"; Description: "OtoType を起動する"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\PrivDicta.exe"; Description: "PrivDicta を起動する"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{app}\OtoType.exe"; Parameters: "quit"; Flags: runhidden skipifdoesntexist; RunOnceId: "QuitApp"
+Filename: "{app}\PrivDicta.exe"; Parameters: "quit"; Flags: runhidden skipifdoesntexist; RunOnceId: "QuitApp"

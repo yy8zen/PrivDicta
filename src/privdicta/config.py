@@ -10,7 +10,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ototype.platform_info import IS_MACOS
+from privdicta.platform_info import IS_MACOS
 
 INSERT_METHODS = ("clipboard", "live")
 LOG_LEVELS = ("error", "info", "debug")
@@ -42,7 +42,7 @@ class Config:
 
 
 TEMPLATE = """\
-# OtoType の設定ファイル
+# PrivDicta の設定ファイル
 # トレイのメニューの「設定…」から画面で変更できます。
 # このファイルを直接編集した場合は、メニューの「設定の再読み込み」で反映されます。
 # 項目を消すと標準値で動きます。
@@ -192,7 +192,7 @@ def parse(raw: dict) -> Config:
 
 
 def _valid_hotkey(value: str) -> bool:
-    from ototype.hotkey import parse_hotkey
+    from privdicta.hotkey import parse_hotkey
 
     try:
         parse_hotkey(value)

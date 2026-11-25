@@ -3,7 +3,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ototype"
+name = "privdicta"
 version = "0.2.0"
 description = "Moonshine Voice を使ったローカル日本語音声入力ツール"
 readme = "README.md"
@@ -23,7 +23,7 @@ dependencies = [
 dev = ["pytest>=8", "pyinstaller>=6.10"]
 
 [project.scripts]
-ototype = "ototype.cli:main"
+privdicta = "privdicta.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

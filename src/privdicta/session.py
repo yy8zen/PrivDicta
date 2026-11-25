@@ -11,7 +11,7 @@ from typing import Callable, Protocol
 
 from PySide6.QtCore import QObject, QTimer, Signal
 
-from ototype.text import join_lines, postprocess
+from privdicta.text import join_lines, postprocess
 
 log = logging.getLogger(__name__)
 

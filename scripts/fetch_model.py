@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from ototype.engine import MODEL_DIRS  # noqa: E402
+from privdicta.engine import MODEL_DIRS  # noqa: E402
 
 
 def fetch(arch_key: str, force: bool = True) -> Path:

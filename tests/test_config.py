@@ -1,6 +1,6 @@
 import tomllib
 
-from ototype import config
+from privdicta import config
 
 
 def test_template_parses_to_defaults():
@@ -48,9 +48,9 @@ def test_replace_table():
 
 
 def test_migrate_old_settings(tmp_path, monkeypatch):
-    from ototype import migrate
+    from privdicta import migrate
 
-    new_dir = tmp_path / "ototype"
+    new_dir = tmp_path / "privdicta"
     old_dir = tmp_path / "moonshine-dictate"
     old_dir.mkdir()
     (old_dir / "config.toml").write_text('hotkey = "f9"\n', encoding="utf-8")

@@ -1,4 +1,4 @@
-# OtoType 要件定義（第1版）
+# PrivDicta 要件定義（第1版）
 
 Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフラインの日本語音声入力ツールを作る。音声認識には Moonshine Voice と日本語モデルを使い、モデルはアプリに同梱して配布する。
 
@@ -15,7 +15,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 - **R1.1** 動作確認の基準環境は Windows 11、macOS 14、Ubuntu 24.04（GNOME）の3つとする。
 - **R1.2** Wayland では次の制限を認め、README に明記する。
-  - 第1版ではグローバルホットキーを登録しない。利用者が OS のショートカット設定に `ototype toggle` コマンドを割り当てる（R3.4）。XDG Desktop Portal の GlobalShortcuts を使った登録は第2版以降で検討する。
+  - 第1版ではグローバルホットキーを登録しない。利用者が OS のショートカット設定に `privdicta toggle` コマンドを割り当てる（R3.4）。XDG Desktop Portal の GlobalShortcuts を使った登録は第2版以降で検討する。
   - テキストは `wl-copy` でクリップボードに入れ、貼り付けキーを `ydotool` で送る。`ydotool` が使えない環境では、クリップボードに入れたことを通知し、貼り付けは利用者が行う。
   - ライブ入力（R5.3）は Wayland では使えない。
   - 録音ウィンドウ（R4）の表示位置と最前面表示は保証しない。
@@ -54,7 +54,7 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
   2. 録音ウィンドウのマイクボタンを押す（R4.2）。
   3. 無音が60秒続く。秒数は設定で変えられる（R6）。
 - **R3.3** 標準のホットキーは、Windows と Linux では Ctrl+Alt+Space、macOS では Control+Option+Space とし、設定で変えられる。Win+H は Windows 標準の音声入力が使っているため使わない。
-- **R3.4** 常駐プロセスへの指示用に、コマンド `ototype toggle`、`start`、`stop` を用意する。Wayland のホットキー（R1.2）と、他のツールからの呼び出しに使う。
+- **R3.4** 常駐プロセスへの指示用に、コマンド `privdicta toggle`、`start`、`stop` を用意する。Wayland のホットキー（R1.2）と、他のツールからの呼び出しに使う。
 
 ## 4. 録音中は画面に録音ウィンドウを出す
 
@@ -85,9 +85,9 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
 
 - **R6.1** 設定ファイルは TOML 形式とし、各項目の説明をファイル内のコメントに書く。
 - **R6.2** 設定ファイルの置き場所は次のとおりとする。初回起動時に、標準値を書き込んだファイルを作る。
-  - Windows：`%APPDATA%\ototype\config.toml`
-  - macOS：`~/Library/Application Support/ototype/config.toml`
-  - Linux：`$XDG_CONFIG_HOME/ototype/config.toml`（未設定なら `~/.config/ototype/config.toml`）
+  - Windows：`%APPDATA%\privdicta\config.toml`
+  - macOS：`~/Library/Application Support/privdicta/config.toml`
+  - Linux：`$XDG_CONFIG_HOME/privdicta/config.toml`（未設定なら `~/.config/privdicta/config.toml`）
 - **R6.3** トレイメニューの「設定…」から開く設定画面で、すべての項目を変えられるようにする（2026年11月に、設定画面を作らない方針から変更）。保存すると設定ファイルに書き出し、アプリを再起動せずに反映する。設定ファイルの説明コメントは、保存しても残す。設定ファイルを直接編集した場合は、トレイメニューの「設定の再読み込み」で反映する。
 - **R6.4** 設定ファイルに誤りがある場合は、誤った項目名と値を通知に表示し、その項目だけ標準値で動かす。TOML の書式の誤りでファイル全体を読めない場合は、行番号を表示し、すべての項目を標準値で動かす。
 - **R6.5** 第1版の設定項目は次のとおりとする。
@@ -119,7 +119,10 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
   - MPL-2.0（certifi、tqdm）：本文と、ソースの入手先（PyPI）を載せる。
   - MIT、BSD、Apache-2.0 など：本文と著作権表示を入れる。ONNX Runtime 1.23.2 は、moonshine-voice の中に入っているため、公式パッケージの LICENSE と ThirdPartyNotices.txt を `packaging/licenses/` に置いて同梱する。
   - Linux 版で同梱する OS のライブラリ：Debian パッケージの著作権ファイルを入れる。使っていない Qt の GTK テーマの部品（libqgtk3）と、それだけが使う GTK 一式は外す（同梱する OS のパッケージが84から66に減った）。
-- **R7.5** Moonshine AI Community License の第 IV 条 c(i) は、Moonshine AI の名前や商標を、帰属表示（IV(a)）以外で使うことを禁じている。そのため、アプリ名を moonshine-dictate から **OtoType**（音＋Type）に変えた（2026年11月）。フォルダ名とコマンド名は小文字の `ototype` とする。旧名の設定は初回起動時に引き継ぎ、旧名で登録した自動起動は消す。名前の候補は Web 検索で既存の製品と重ならないことを確かめた（VoiKey は同名の音声翻訳アプリと、米国の「VOICEKEY」の商標出願があったため見送った）。日本の商標（J-PlatPat）は未確認。
+- **R7.5** Moonshine AI Community License の第 IV 条 c(i) は、Moonshine AI の名前や商標を、帰属表示（IV(a)）以外で使うことを禁じている。そのため、アプリ名を moonshine-dictate から **PrivDicta**（Private Dictation）に変えた（2026年11月）。フォルダ名とコマンド名は小文字の `privdicta` とする。旧名の設定は初回起動時に引き継ぎ、旧名で登録した自動起動は消す。
+  - 名前の候補は Web 検索で既存の製品と重ならないかを確かめた。VoiKey は、同名の音声翻訳アプリと、米国の「VOICEKEY」の商標出願（音声からテキストへの変換ソフトウェア）があったため見送った。
+  - PrivDicta と同じ名前の製品は見つからなかった。似た名前として、音声入力アプリの VivaDicta（iOS）、Dicta（macOS）、Private Dictation: Offline AI（Android）がある。
+  - 日本の商標（J-PlatPat）は未確認。
 - **R7.3** README の「公式ライセンス全文」のリンクを https://www.moonshine.ai/license に直した。
 
 ## 8. Python と PySide6 で実装する

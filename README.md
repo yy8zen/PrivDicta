@@ -1,4 +1,4 @@
-# OtoType
+# PrivDicta
 Windows・macOS・Linux 対応の、ローカルで動く日本語の音声入力ツール。
 
 ホットキーを押すと録音が始まり、話した日本語がフォーカスのあるアプリに入力されます。操作は Windows 11 の音声入力（Win+H）に合わせています。音声認識はすべて PC の中で行い、ネットワーク通信は一切しません。
@@ -9,30 +9,30 @@ Powered by Moonshine AI
 
 ## インストールして起動する
 
-配布ファイルは GitHub の [Releases](https://github.com/yy8zen/ototype/releases) からダウンロードします。
+配布ファイルは GitHub の [Releases](https://github.com/yy8zen/privdicta/releases) からダウンロードします。
 
 ### Windows
 
-1. `ototype-<バージョン>-windows-setup.exe` を実行します。管理者権限は要りません。`%LOCALAPPDATA%\Programs\OtoType` にインストールされます。
+1. `privdicta-<バージョン>-windows-setup.exe` を実行します。管理者権限は要りません。`%LOCALAPPDATA%\Programs\PrivDicta` にインストールされます。
 2. 「Windows によって PC が保護されました」と表示されたら、「詳細情報」を押してから「実行」を押します。配布ファイルに電子署名がないため表示されます。
-3. インストールの最後の画面で「OtoType を起動する」にチェックを入れたまま「完了」を押すと起動します。次からはスタートメニューの「ototype」から起動します。
+3. インストールの最後の画面で「PrivDicta を起動する」にチェックを入れたまま「完了」を押すと起動します。次からはスタートメニューの「PrivDicta」から起動します。
 
 **スマート アプリ コントロールがオンの PC では動かない場合があります。** 配布ファイルに電子署名がないため、「アプリケーション制御ポリシーによってこのファイルがブロックされました」と表示され、インストーラーやアプリが止められることがあります。初めて実行したときだけ止められ、もう一度実行すると動く場合もあります。何度実行しても止められる場合は、ファイルを個別に許可する方法はありません。「Windows セキュリティ > アプリとブラウザーの制御 > スマート アプリ コントロール」をオフにするしかありません。会社が管理する PC では、管理者に相談してください。
 
 ### macOS（Apple Silicon）
 
-1. `ototype-<バージョン>-macos-arm64.dmg` を開き、`OtoType.app` を「アプリケーション」フォルダにドラッグします。
-2. 「アプリケーション」フォルダで OtoType を右クリックして「開く」を選びます。macOS 15 以降でこの方法では開けない場合は、一度ダブルクリックして警告を閉じてから、「システム設定 > プライバシーとセキュリティ」の下にある「このまま開く」を押します。配布ファイルが Apple の署名と公証を受けていないため、この手順が要ります。
+1. `privdicta-<バージョン>-macos-arm64.dmg` を開き、`PrivDicta.app` を「アプリケーション」フォルダにドラッグします。
+2. 「アプリケーション」フォルダで PrivDicta を右クリックして「開く」を選びます。macOS 15 以降でこの方法では開けない場合は、一度ダブルクリックして警告を閉じてから、「システム設定 > プライバシーとセキュリティ」の下にある「このまま開く」を押します。配布ファイルが Apple の署名と公証を受けていないため、この手順が要ります。
 3. マイクとアクセシビリティの許可を求められたら、許可します（[macOS の注意](#macos)を参照）。
 4. Dock にはアイコンが出ません。メニューバーにマイクのアイコンが出れば起動しています。
 
 ### Linux
 
-1. `ototype-<バージョン>-linux-x86_64.AppImage` に実行権限を付けて、実行します。
+1. `privdicta-<バージョン>-linux-x86_64.AppImage` に実行権限を付けて、実行します。
 
    ```
-   chmod +x ototype-*-linux-x86_64.AppImage
-   ./ototype-*-linux-x86_64.AppImage
+   chmod +x privdicta-*-linux-x86_64.AppImage
+   ./privdicta-*-linux-x86_64.AppImage
    ```
 
 2. 「libfuse.so.2 が見つからない」というエラーで起動しない場合は、FUSE 2 のライブラリを入れてください。Ubuntu 24.04 では `sudo apt install libfuse2t64`、22.04 では `sudo apt install libfuse2` です。
@@ -50,11 +50,11 @@ Powered by Moonshine AI
 Python 3.11 以降が必要です。
 
 ```
-git clone https://github.com/yy8zen/ototype.git
-cd ototype
+git clone https://github.com/yy8zen/privdicta.git
+cd privdicta
 python -m pip install -e .
 python scripts/fetch_model.py      # 日本語モデル base（約140MB）を models/ にダウンロードする。最初の1回だけ
-python -m ototype        # 起動する
+python -m privdicta        # 起動する
 ```
 
 ## 使い方
@@ -77,17 +77,17 @@ python -m ototype        # 起動する
 コマンドラインからも操作できます。OS のショートカットキーに割り当てる場合などに使います。
 
 ```
-ototype toggle   # 録音の開始・終了を切り替える（start / stop / reload / quit も使える）
+privdicta toggle   # 録音の開始・終了を切り替える（start / stop / reload / quit も使える）
 ```
 
-`ototype` の部分は、OS ごとに次のパスに置き換えてください。
+`privdicta` の部分は、OS ごとに次のパスに置き換えてください。
 
 | OS | コマンドのパス |
 | --- | --- |
-| Windows | `"%LOCALAPPDATA%\Programs\OtoType\OtoType.exe"` |
-| macOS | `/Applications/OtoType.app/Contents/MacOS/OtoType` |
-| Linux | AppImage のファイルのパス（例：`~/Applications/ototype-0.2.0-linux-x86_64.AppImage`） |
-| ソースコードから | `python -m ototype` |
+| Windows | `"%LOCALAPPDATA%\Programs\PrivDicta\PrivDicta.exe"` |
+| macOS | `/Applications/PrivDicta.app/Contents/MacOS/PrivDicta` |
+| Linux | AppImage のファイルのパス（例：`~/Applications/privdicta-0.2.0-linux-x86_64.AppImage`） |
+| ソースコードから | `python -m privdicta` |
 
 ## 設定を変える
 
@@ -109,11 +109,11 @@ ototype toggle   # 録音の開始・終了を切り替える（start / stop / r
 
 | OS | 場所 |
 | --- | --- |
-| Windows | `%APPDATA%\ototype\config.toml` |
-| macOS | `~/Library/Application Support/ototype/config.toml` |
-| Linux | `~/.config/ototype/config.toml` |
+| Windows | `%APPDATA%\privdicta\config.toml` |
+| macOS | `~/Library/Application Support/privdicta/config.toml` |
+| Linux | `~/.config/privdicta/config.toml` |
 
-設定できる項目は、ホットキー、無音で終了するまでの秒数、テキストの入れ方、クリップボードを元に戻すか、マイクのデバイス、効果音、ログイン時の自動起動、ログの出力量、認識結果の置換表です。ログは設定ファイルと同じフォルダの `ototype.log` に出ます。
+設定できる項目は、ホットキー、無音で終了するまでの秒数、テキストの入れ方、クリップボードを元に戻すか、マイクのデバイス、効果音、ログイン時の自動起動、ログの出力量、認識結果の置換表です。ログは設定ファイルと同じフォルダの `privdicta.log` に出ます。
 
 ## OS ごとの注意
 
@@ -123,7 +123,7 @@ ototype toggle   # 録音の開始・終了を切り替える（start / stop / r
 
 - 初回の開き方は[インストールして起動する](#macosapple-silicon)を参照してください。ダブルクリックだけでは警告が出て開けません。
 - 「システム設定 > プライバシーとセキュリティ」で、**マイク**と**アクセシビリティ**を許可してください。アクセシビリティは、ホットキーの検出とテキストの入力に使います。
-- アップデートした後にホットキーが効かなくなったら、アクセシビリティの一覧から OtoType を一度削除して、もう一度許可してください。
+- アップデートした後にホットキーが効かなくなったら、アクセシビリティの一覧から PrivDicta を一度削除して、もう一度許可してください。
 
 ### Linux（X11）
 
@@ -133,7 +133,7 @@ ototype toggle   # 録音の開始・終了を切り替える（start / stop / r
 
 Wayland では、セキュリティの仕組み上、ほかのアプリのキー入力を監視できません。そのため次の制限があります。
 
-- ホットキーはアプリでは登録しません。OS の設定でショートカットキーを追加し、コマンド `ototype toggle` を割り当ててください（GNOME では「設定 > キーボード > ショートカットを表示およびカスタマイズ > カスタムショートカット」）。
+- ホットキーはアプリでは登録しません。OS の設定でショートカットキーを追加し、コマンド `privdicta toggle` を割り当ててください（GNOME では「設定 > キーボード > ショートカットを表示およびカスタマイズ > カスタムショートカット」）。
 - テキストは `wl-copy`（パッケージ名 `wl-clipboard`）でクリップボードに入れ、`ydotool` があれば Ctrl+V を送ります。`ydotool` がない場合は、通知が出たら自分で Ctrl+V を押してください。
 - ライブ入力は使えず、クリップボード方式で動きます。
 
@@ -142,9 +142,9 @@ Wayland では、セキュリティの仕組み上、ほかのアプリのキー
 ```
 python -m pip install -e ".[dev]"
 python scripts/fetch_model.py      # 同梱する日本語モデルを models/ にダウンロードする
-python -m ototype        # 起動する
+python -m privdicta        # 起動する
 python -m pytest                   # テスト（Linux では xvfb-run -a python -m pytest）
-pyinstaller packaging/ototype.spec   # 配布用に固める
+pyinstaller packaging/privdicta.spec   # 配布用に固める
 ```
 
 要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。`v` で始まるタグを push すると、Windows のインストーラー、macOS の dmg（Apple Silicon 版のみ）、Linux の AppImage をリリースの下書きに添付します。

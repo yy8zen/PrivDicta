@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-from ototype import APP_NAME
+from privdicta import APP_NAME
 
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
@@ -38,7 +38,7 @@ def config_path() -> Path:
 
 
 def log_path() -> Path:
-    return config_dir() / "ototype.log"
+    return config_dir() / "privdicta.log"
 
 
 def resource_root() -> Path:
@@ -46,5 +46,5 @@ def resource_root() -> Path:
     frozen_root = getattr(sys, "_MEIPASS", None)
     if frozen_root:
         return Path(frozen_root)
-    # 開発時はリポジトリのルート（src/ototype から2つ上）
+    # 開発時はリポジトリのルート（src/privdicta から2つ上）
     return Path(__file__).resolve().parents[2]
