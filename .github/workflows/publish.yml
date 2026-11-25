@@ -42,7 +42,7 @@ jobs:
           missing=0
           for pattern in 'windows-setup\.exe$' 'macos-arm64\.dmg$' 'linux-x86_64\.AppImage$' \
                          '^THIRD-PARTY-NOTICES-windows' '^THIRD-PARTY-NOTICES-macos' '^THIRD-PARTY-NOTICES-linux' \
-                         '^NOTICE\.txt$' '^MOONSHINE-LICENSE\.txt$'; do
+                         '^NOTICE\.txt$' '^MOONSHINE-LICENSE\.txt$' '^privdicta-user-guide-ja\.md$'; do
             if ! echo "$assets" | grep -Eq "$pattern"; then
               echo "::error::添付ファイルが足りません: $pattern"
               missing=1
