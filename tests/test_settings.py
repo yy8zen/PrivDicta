@@ -92,3 +92,24 @@ def test_first_load_failure_is_broken(qapp):
     engine.is_loaded = False
     engine.load_failed.emit("なし")
     assert session.state == BROKEN
+
+
+def test_dialog_punctuation(qapp):
+    dialog = SettingsDialog(config.Config(), ["base"], [])
+    assert dialog.result_config().punctuation == "keep"
+    dialog.punctuation.setCurrentIndex(dialog.punctuation.findData("remove"))
+    assert dialog.result_config().punctuation == "remove"
+
+
+def test_base_is_default_model():
+    assert config.Config().model_arch == "base"
+
+
+def test_welcome_dialog_builds(qapp):
+    from moonshine_dictate.ui.welcome import POWERED_BY, WelcomeDialog, build_html
+
+    html = build_html("ctrl+alt+space")
+    assert "Ctrl + Alt + Space" in html
+    assert POWERED_BY in html
+    dialog = WelcomeDialog("ctrl+alt+space", autostart=True)
+    assert dialog.autostart.isChecked()

@@ -3,9 +3,13 @@ Moonshine Voiceを使った、Windows・macOS・Linux対応のローカル音声
 
 ホットキーを押すと録音が始まり、話した日本語がフォーカスのあるアプリに入力されます。操作は Windows 11 の音声入力（Win+H）に合わせています。音声認識はすべて PC の中で行い、ネットワーク通信は一切しません。
 
+Powered by Moonshine AI
+
+配布物を使う人向けの説明は [docs/user-guide.md](docs/user-guide.md) にあります。同じ内容を、配布物に `使い方.md` として入れています。
+
 ## インストールして起動する
 
-配布ファイルは GitHub の [Releases](https://github.com/yy8zen/moonshine-dictate/releases) からダウンロードします。まだリリースがない間は、[Actions](https://github.com/yy8zen/moonshine-dictate/actions/workflows/build.yml) の最新の成功した実行を開き、Artifacts から自分の OS の zip をダウンロードして展開してください（GitHub へのログインが必要です）。
+配布ファイルは GitHub の [Releases](https://github.com/yy8zen/moonshine-dictate/releases) からダウンロードします。
 
 ### Windows
 
@@ -35,10 +39,11 @@ Moonshine Voiceを使った、Windows・macOS・Linux対応のローカル音声
 
 ### 起動・終了・自動起動
 
+- 初めて起動したときは、使い方の画面が出ます。トレイのアイコンのメニューの「使い方」から、いつでも開き直せます。
 - 起動すると、モデルを読み込む間はトレイのアイコンが黄色になり、使えるようになると灰色になります。
 - すでに起動している状態でもう一度起動すると、「すでに起動しています」と表示して終わります。2つ同時には動きません。
 - 終了するときは、トレイのアイコンのメニューから「終了」を選びます。
-- ログインしたときに自動で起動させるには、設定ファイルで `autostart = true` にして、「設定の再読み込み」を選びます。
+- ログインしたときに自動で起動させるには、使い方の画面か設定画面で「ログインしたときに自動で起動する」をオンにします。
 
 ### ソースコードから起動する
 
@@ -48,7 +53,7 @@ Python 3.11 以降が必要です。
 git clone https://github.com/yy8zen/moonshine-dictate.git
 cd moonshine-dictate
 python -m pip install -e .
-python scripts/fetch_model.py      # 日本語モデル（約120MB）を models/ にダウンロードする。最初の1回だけ
+python scripts/fetch_model.py      # 日本語モデル base（約140MB）を models/ にダウンロードする。最初の1回だけ
 python -m moonshine_dictate        # 起動する
 ```
 
@@ -56,7 +61,7 @@ python -m moonshine_dictate        # 起動する
 
 1. アプリを起動すると、タスクトレイ（macOS ではメニューバー）にマイクのアイコンが出ます。アイコンが灰色になったら使えます。モデルを読み込んでいる間は黄色です。
 2. 文字を入れたい場所をクリックしてから、**Ctrl+Alt+Space**（macOS では **Control+Option+Space**）を押します。画面の下に録音ウィンドウが出て、マイクのボタンが赤く点灯します。
-3. 話します。認識中の文字は録音ウィンドウに表示されます。
+3. 話します。認識した文字は、話の区切りごとに録音ウィンドウに表示されます。
 4. 次のどれかで録音が終わります。
    - もう一度ホットキーを押す
    - 録音ウィンドウのマイクのボタンを押す
@@ -94,7 +99,8 @@ moonshine-dictate toggle   # 録音の開始・終了を切り替える（start 
 | 入れ方 | 録音の終了時にまとめて入れるか、話の区切りごとに入れるか |
 | 無音で終了するまで | 無音がこの秒数続くと録音を終えます |
 | マイク | 使うマイク。「OS の既定のマイク」なら OS の設定に従います |
-| モデル | `small-streaming`（標準）は、話している途中から録音ウィンドウに文字が出ます。`base` はストリーミングに対応していないので、区切りが確定してから文字が出ます。精度を比べて選んでください |
+| 句読点 | 認識結果のまま／区切りの終わりに「。」を足す／句読点を入れない |
+| モデル | 配布物には `base` だけが入っています。ソースコードから動かす場合は、`python scripts/fetch_model.py small-streaming` でダウンロードすれば、話している途中から文字が出る `small-streaming` も選べます。ただし精度は base より低いです |
 | 置換表 | 認識結果の中の文字列を、別の文字列に置き換えます。例えば「でぃすこーど」を「Discord」にします |
 
 モデルを切り替えると、読み込みが終わるまで（トレイのアイコンが黄色の間）は録音できません。録音中に切り替えた場合は、録音が終わってから読み込みます。
@@ -149,8 +155,8 @@ pyinstaller packaging/moonshine-dictate.spec   # 配布用に固める
 このリポジトリに含まれるソースコードは [MIT License](LICENSE) の下で公開されています。
 
 ### 配布バイナリ・音声認識モデルについて
-リリースページ等で配布している実行ファイル（`.exe` / `.dmg` / `.AppImage`）には、Moonshine AIの日本語音声認識モデルが同梱されています。  
-そのため、同梱モデルおよびモデルを含む配布パッケージの利用には **[Moonshine Community License](https://www.moonshine.ai/license)** が適用されます。
+リリースページで配布している実行ファイル（`.exe` / `.dmg` / `.AppImage`）には、Moonshine AI の日本語音声認識モデル `base-ja` が同梱されています。このモデルには **Moonshine AI Community License** が適用されます。全文は [packaging/MOONSHINE-LICENSE.txt](packaging/MOONSHINE-LICENSE.txt)（SECTION 2）、帰属表示は [packaging/NOTICE.txt](packaging/NOTICE.txt) にあります。
 
-- 配布パッケージは無料です。
-- 商用目的での利用の条件は、[ライセンス全文](https://www.moonshine.ai/license)をご確認ください。
+- 研究や非商用の目的では、無料で使えます。
+- 商用の目的で使う場合は、Moonshine AI への登録が必要です。年間売上が100万ドルを超える組織は、別のライセンスが必要です。詳しくはライセンス全文を確認してください。
+- ライブラリの moonshine-voice と、ストリーミング対応のモデル（small-streaming など）は MIT License です。

@@ -14,7 +14,9 @@ from moonshine_dictate.platform_info import IS_MACOS
 
 INSERT_METHODS = ("clipboard", "live")
 LOG_LEVELS = ("error", "info", "debug")
-MODEL_ARCHS = ("small-streaming", "tiny-streaming", "base")
+MODEL_ARCHS = ("base", "small-streaming", "tiny-streaming")
+PUNCTUATION_MODES = ("keep", "add", "remove")
+DEFAULT_MODEL_ARCH = "base"
 
 
 def default_hotkey() -> str:
@@ -32,7 +34,8 @@ class Config:
     autostart: bool = False
     log_level: str = "info"
     model_dir: str = ""
-    model_arch: str = "small-streaming"
+    model_arch: str = DEFAULT_MODEL_ARCH
+    punctuation: str = "keep"
     replace: dict[str, str] = field(default_factory=dict)
     # 読み込み時に見つかった誤り。設定項目ではない
     errors: list[str] = field(default_factory=list, compare=False)
@@ -56,6 +59,12 @@ silence_timeout_sec = {silence_timeout_sec}
 #   "live"      : 話の区切りが確定するたびに入れます
 insert_method = {insert_method}
 
+# 句読点の扱い
+#   "keep"   : 認識結果のまま
+#   "add"    : 区切りの終わりに「。」がなければ足す
+#   "remove" : 句読点（、。！？）を取り除く
+punctuation = {punctuation}
+
 # 貼り付けた後に元のクリップボードの内容に戻すか
 restore_clipboard = {restore_clipboard}
 
@@ -72,9 +81,9 @@ autostart = {autostart}
 log_level = {log_level}
 
 # 使うモデルの種類
-#   "small-streaming" : 標準。話している途中から文字が出ます
-#   "base"            : ストリーミング非対応。区切りが確定してから文字が出ます
-#   "tiny-streaming"  : 小さく速いが精度は低い（配布物には入っていません）
+#   "base"            : 標準。区切りが確定してから文字が出ます
+#   "small-streaming" : 話している途中から文字が出るが、精度は低い（配布物には入っていません）
+#   "tiny-streaming"  : 小さく速いが精度はさらに低い（配布物には入っていません）
 model_arch = {model_arch}
 # モデルの置き場所。空なら同梱のモデル置き場を使います
 model_dir = {model_dir}
@@ -162,6 +171,7 @@ def parse(raw: dict) -> Config:
     take("log_level", str, LOG_LEVELS)
     take("model_dir", str)
     take("model_arch", str, MODEL_ARCHS)
+    take("punctuation", str, PUNCTUATION_MODES)
 
     if "replace" in raw:
         table = raw["replace"]

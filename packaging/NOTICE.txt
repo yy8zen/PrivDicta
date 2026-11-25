@@ -1,0 +1,23 @@
+moonshine-dictate
+Copyright (c) 2026 YYamamoto
+The source code of moonshine-dictate is licensed under the MIT License (see LICENSE).
+
+----------------------------------------------------------------------
+Moonshine AI Japanese speech recognition model (base-ja)
+----------------------------------------------------------------------
+This distribution includes the Moonshine AI Japanese "base" speech-to-text
+model, unmodified.
+
+This Moonshine AI Model is licensed under the Moonshine AI Community License, Copyright © Moonshine AI Ltd. All Rights Reserved
+
+Powered by Moonshine AI
+
+The full text of the Moonshine AI Community License is included in
+MOONSHINE-LICENSE.txt (SECTION 2).
+
+----------------------------------------------------------------------
+Moonshine Voice library (moonshine-voice)
+----------------------------------------------------------------------
+The moonshine-voice library is licensed under the MIT License,
+Copyright (c) 2025 Useful Sensors, Inc. (dba Moonshine AI).
+See MOONSHINE-LICENSE.txt (SECTION 1).

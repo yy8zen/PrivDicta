@@ -28,7 +28,7 @@ MODEL_DIRS = {
     # ストリーミング非対応。区切りが確定するまで途中結果は出ないが、Small Streaming より大きい
     "base": ("base-ja", "BASE"),
 }
-BUNDLED_ARCH = "small-streaming"
+BUNDLED_ARCH = "base"  # 配布物に同梱するモデル
 
 
 @dataclass

@@ -1,5 +1,4 @@
 # PyInstaller の設定。リポジトリのルートで次のように実行する。
-#   python scripts/fetch_model.py
 #   python scripts/fetch_model.py base
 #   pyinstaller packaging/moonshine-dictate.spec
 # -*- mode: python -*-
@@ -10,19 +9,21 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 ROOT = Path(SPECPATH).parent
-# 同梱するモデル。small-streaming は標準、base は設定画面で選べる精度重視のモデル
-MODELS = ["small-streaming-ja", "base-ja"]
+# 同梱するモデル。small-streaming は精度が低く使われなかったため、base だけを入れる（要件 R2.5）
+MODELS = ["base-ja"]
 
-datas = [(str(ROOT / "LICENSE"), ".")]
+# ライセンス全文、帰属表示、使い方（要件 R7.2）。Moonshine AI Community License の配布条件を満たすために必須
+datas = [
+    (str(ROOT / "LICENSE"), "."),
+    (str(ROOT / "packaging" / "MOONSHINE-LICENSE.txt"), "."),
+    (str(ROOT / "packaging" / "NOTICE.txt"), "."),
+    (str(ROOT / "docs" / "user-guide.md"), "."),
+]
 for name in MODELS:
     model = ROOT / "models" / name
     if not model.is_dir():
         raise SystemExit(f"{model} がありません。先に python scripts/fetch_model.py を実行してください")
     datas.append((str(model), f"models/{name}"))
-# Moonshine の同梱ライセンス全文（要件 R7.2）。ファイルがあれば入れる
-community_license = ROOT / "packaging" / "MOONSHINE-COMMUNITY-LICENSE.txt"
-if community_license.exists():
-    datas.append((str(community_license), "."))
 datas += collect_data_files("moonshine_voice", excludes=["**/*.wav", "assets/tiny-en/**"])
 
 a = Analysis(
@@ -56,6 +57,6 @@ if sys.platform == "darwin":
         info_plist={
             "LSUIElement": True,  # Dock に出さず、メニューバーだけに常駐する
             "NSMicrophoneUsageDescription": "音声入力のためにマイクを使います。音声は外部に送信しません。",
-            "CFBundleShortVersionString": "0.1.0",
+            "CFBundleShortVersionString": "0.2.0",
         },
     )

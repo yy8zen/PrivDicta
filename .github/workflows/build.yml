@@ -69,7 +69,6 @@ jobs:
       - run: pip install -e ".[dev]"
       - name: 同梱する日本語モデルをダウンロードする
         run: |
-          python scripts/fetch_model.py small-streaming
           python scripts/fetch_model.py base
       - name: PyInstaller で固める
         run: pyinstaller --noconfirm packaging/moonshine-dictate.spec
@@ -88,12 +87,24 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           codesign --force --deep --sign - dist/moonshine-dictate.app
-          hdiutil create -volname moonshine-dictate -srcfolder dist/moonshine-dictate.app \
+          # dmg にはアプリのほか、Applications へのリンクと使い方、ライセンスを入れる
+          mkdir -p build/dmg
+          cp -R dist/moonshine-dictate.app build/dmg/
+          ln -s /Applications build/dmg/Applications
+          cp docs/user-guide.md "build/dmg/使い方.md"
+          cp packaging/NOTICE.txt packaging/MOONSHINE-LICENSE.txt build/dmg/
+          hdiutil create -volname moonshine-dictate -srcfolder build/dmg \
             -ov -format UDZO "dist/moonshine-dictate-${VERSION}-${{ matrix.name }}.dmg"
 
       - name: Linux の AppImage を作る
         if: runner.os == 'Linux'
         run: bash packaging/linux/build-appimage.sh "$VERSION"
+
+      - name: 使い方とライセンスを配布物の横に置く
+        shell: bash
+        run: |
+          cp docs/user-guide.md "dist/使い方.md"
+          cp packaging/NOTICE.txt packaging/MOONSHINE-LICENSE.txt dist/
 
       - name: 配布物のサイズを表示する
         shell: bash
@@ -106,6 +117,8 @@ jobs:
             dist/*.exe
             dist/*.dmg
             dist/*.AppImage
+            dist/*.md
+            dist/*.txt
           if-no-files-found: error
 
   release:
@@ -117,7 +130,16 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+      - uses: actions/checkout@v4
+        with:
+          path: src
+      - name: リリースノートの有無を確かめる
+        id: notes
+        run: |
+          f="src/docs/release-notes/${GITHUB_REF_NAME}.md"
+          if [ -f "$f" ]; then echo "path=$f" >> "$GITHUB_OUTPUT"; fi
       - uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
+          body_path: ${{ steps.notes.outputs.path }}
           draft: true

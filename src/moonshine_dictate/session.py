@@ -11,7 +11,7 @@ from typing import Callable, Protocol
 
 from PySide6.QtCore import QObject, QTimer, Signal
 
-from moonshine_dictate.text import apply_replace, join_lines
+from moonshine_dictate.text import join_lines, postprocess
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ class Session(QObject):
         self._play_sound = play_sound
         self._inserter = None
         self._replace: dict[str, str] = {}
+        self._punctuation = "keep"
         self._device = ""
         self._sound = True
         self._state = LOADING
@@ -63,10 +64,11 @@ class Session(QObject):
     # ---- 設定 ----
 
     def configure(self, inserter, replace: dict[str, str], device: str, sound: bool,
-                  silence_timeout_sec: int) -> None:
+                  silence_timeout_sec: int, punctuation: str = "keep") -> None:
         """設定を反映する。録音中に呼ばれた場合は、次の録音から効く項目がある。"""
         self._inserter = inserter
         self._replace = dict(replace)
+        self._punctuation = punctuation
         self._device = device
         self._sound = sound
         self.set_silence_timeout(silence_timeout_sec)
@@ -158,7 +160,7 @@ class Session(QObject):
 
     def _complete(self, line_id, text: str) -> None:
         self._completed.add(line_id)
-        text = apply_replace(text.strip(), self._replace)
+        text = postprocess(text, self._punctuation, self._replace)
         if not text:
             return
         self._overlay.commit(text)

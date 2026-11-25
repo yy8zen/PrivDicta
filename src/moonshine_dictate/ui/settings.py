@@ -30,9 +30,14 @@ from moonshine_dictate.hotkey import parse_hotkey
 from moonshine_dictate.platform_info import IS_MACOS
 
 MODEL_LABELS = {
-    "small-streaming": "small-streaming（標準。話している途中から文字が出る）",
-    "base": "base（区切りが確定してから文字が出る）",
-    "tiny-streaming": "tiny-streaming（軽いが精度は低い）",
+    "base": "base（標準。区切りが確定してから文字が出る）",
+    "small-streaming": "small-streaming（話している途中から文字が出るが、精度は低い）",
+    "tiny-streaming": "tiny-streaming（軽いが精度はさらに低い）",
+}
+PUNCTUATION_LABELS = {
+    "keep": "認識結果のまま",
+    "add": "区切りの終わりに「。」を足す",
+    "remove": "句読点（、。！？）を入れない",
 }
 INSERT_LABELS = {
     "clipboard": "録音の終了時にまとめて入れる",
@@ -151,6 +156,10 @@ class SettingsDialog(QDialog):
         for key, label in INSERT_LABELS.items():
             self.insert_method.addItem(label, key)
         self._select(self.insert_method, cfg.insert_method)
+        self.punctuation = QComboBox()
+        for key, label in PUNCTUATION_LABELS.items():
+            self.punctuation.addItem(label, key)
+        self._select(self.punctuation, cfg.punctuation)
         self.restore_clipboard = QCheckBox("貼り付けた後に、元のクリップボードの内容に戻す")
         self.restore_clipboard.setChecked(cfg.restore_clipboard)
         self.silence = QSpinBox()
@@ -164,6 +173,7 @@ class SettingsDialog(QDialog):
         form.addRow("", self._hotkey_hint)
         form.addRow("入れ方", self.insert_method)
         form.addRow("", self.restore_clipboard)
+        form.addRow("句読点", self.punctuation)
         form.addRow("無音で終了するまで", self.silence)
 
         # ---- 音声認識 ----
@@ -256,6 +266,7 @@ class SettingsDialog(QDialog):
             hotkey=self.hotkey.value(),
             insert_method=self.insert_method.currentData(),
             restore_clipboard=self.restore_clipboard.isChecked(),
+            punctuation=self.punctuation.currentData(),
             silence_timeout_sec=self.silence.value(),
             input_device=self.device.currentData(),
             model_arch=self.model.currentData(),
