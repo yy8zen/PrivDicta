@@ -160,3 +160,6 @@ pyinstaller packaging/moonshine-dictate.spec   # 配布用に固める
 - 研究や非商用の目的では、無料で使えます。
 - 商用の目的で使う場合は、Moonshine AI への登録が必要です。年間売上が100万ドルを超える組織は、別のライセンスが必要です。詳しくはライセンス全文を確認してください。
 - ライブラリの moonshine-voice と、ストリーミング対応のモデル（small-streaming など）は MIT License です。
+
+### 同梱しているそのほかのソフトウェア
+配布物には、Qt / PySide6（LGPL-3.0）、pynput（LGPL-3.0）、python-xlib（LGPL-2.1 以降）、numpy、ONNX Runtime、PortAudio などを同梱しています。ライセンスの本文と、ソースコードの入手先の一覧（`THIRD-PARTY-NOTICES.md`）は、ビルドのたびに [scripts/collect_licenses.py](scripts/collect_licenses.py) が配布物の中身から作り、配布物の `third_party_licenses` フォルダに入れます。LGPL のライブラリは変更せず、利用者が差し替えられるよう、共有ライブラリと Python のソースファイルのまま同梱しています。

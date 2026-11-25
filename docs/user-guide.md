@@ -87,3 +87,4 @@ Powered by Moonshine AI
 
 - moonshine-dictate のソースコードは MIT License です。
 - 同梱している日本語の音声認識モデル（base-ja）は、Moonshine AI Community License のもとで配布しています。全文は `MOONSHINE-LICENSE.txt`、帰属表示は `NOTICE.txt` にあります。
+- そのほかに同梱しているソフトウェア（Qt / PySide6、pynput、numpy、ONNX Runtime など）のライセンスと、ソースコードの入手先は、`third_party_licenses` フォルダの `THIRD-PARTY-NOTICES.md` にあります。Windows ではインストール先のフォルダ、macOS では dmg の中とアプリの `Contents/Resources` にあります。

@@ -114,6 +114,12 @@ Windows 11 の音声入力（Win+H）と同じ操作で使える、完全オフ�
   - 決められた帰属表示を書いた Notice ファイルを入れる（`packaging/NOTICE.txt`）
   - 「Powered by Moonshine AI」を、使い方の画面、README、配布物の説明書に目立つように表示する
   - 無料配布は非商用の利用にあたる。商用目的の利用には Moonshine AI への登録と、年間売上100万ドル未満の条件がある。
+- **R7.4** 同梱するサードパーティのソフトウェアのライセンスを守る。ビルドのたびに `scripts/collect_licenses.py` が、配布物の中身からライセンスの本文とソースの入手先の一覧（`THIRD-PARTY-NOTICES.md`）を作り、配布物に入れる。ライセンスのファイルが見つからないパッケージがあれば、ビルドを止める。
+  - LGPL（Qt / PySide6、shiboken6、pynput、python-xlib）：変更せずに同梱し、利用者が差し替えられるよう、共有ライブラリと Python のソースファイルのまま入れる。本文（LGPL-3.0、GPL-3.0、LGPL-2.1）とソースの入手先を載せる。PySide6 は LGPL-3.0 を選ぶ。
+  - MPL-2.0（certifi、tqdm）：本文と、ソースの入手先（PyPI）を載せる。
+  - MIT、BSD、Apache-2.0 など：本文と著作権表示を入れる。ONNX Runtime 1.23.2 は、moonshine-voice の中に入っているため、公式パッケージの LICENSE と ThirdPartyNotices.txt を `packaging/licenses/` に置いて同梱する。
+  - Linux 版で同梱する OS のライブラリ：Debian パッケージの著作権ファイルを入れる。使っていない Qt の GTK テーマの部品（libqgtk3）と、それだけが使う GTK 一式は外す（同梱する OS のパッケージが84から66に減った）。
+- **R7.5** Moonshine AI Community License の第 IV 条 c(i) は、Moonshine AI の名前や商標を、帰属表示（IV(a)）以外で使うことを禁じている。アプリ名「moonshine-dictate」はこれに反する可能性があるため、公開前に名前を変える（要決定）。
 - **R7.3** README の「公式ライセンス全文」のリンクを https://www.moonshine.ai/license に直した。
 
 ## 8. Python と PySide6 で実装する

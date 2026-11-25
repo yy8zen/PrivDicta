@@ -35,7 +35,19 @@ a = Analysis(
                    "pynput.mouse._win32", "pynput.mouse._darwin", "pynput.mouse._xorg"],
     # moonshine_voice のうち、音声入力に使わない機能（TTS、LoRA 学習など）の依存は入れない
     excludes=["torch", "transformers", "tkinter", "matplotlib"],
+    # LGPL の Python パッケージは、利用者が差し替えられるように .py のまま同梱する（要件 R7.4）
+    module_collection_mode={"pynput": "py", "Xlib": "py", "PySide6": "py", "shiboken6": "py"},
 )
+
+if sys.platform.startswith("linux"):
+    # Qt の GTK テーマの部品（libqgtk3）と、それだけが使うライブラリを外す。
+    # 使っていない部品のために、GTK 一式とそのライセンスを配布物に抱えないため（要件 R7.4）
+    GTK_ONLY = ("libqgtk3", "libgtk-3", "libgdk-3", "libgdk_pixbuf", "libatk-1.0", "libatk-bridge",
+                "libatspi", "libcairo", "libpango", "libepoxy", "libfribidi", "libthai", "libdatrie",
+                "libpixman", "libharfbuzz", "libgraphite2", "libjpeg")
+    a.binaries = [b for b in a.binaries
+                  if not Path(b[0]).name.startswith(GTK_ONLY)]
+
 pyz = PYZ(a.pure)
 
 exe = EXE(

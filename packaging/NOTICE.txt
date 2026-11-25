@@ -21,3 +21,13 @@ Moonshine Voice library (moonshine-voice)
 The moonshine-voice library is licensed under the MIT License,
 Copyright (c) 2025 Useful Sensors, Inc. (dba Moonshine AI).
 See MOONSHINE-LICENSE.txt (SECTION 1).
+
+----------------------------------------------------------------------
+Other third-party software
+----------------------------------------------------------------------
+This distribution also includes other third-party software (Qt / PySide6,
+pynput, python-xlib, numpy, ONNX Runtime, PortAudio and others).
+Their licenses, copyright notices and where to obtain their source code are
+listed in third_party_licenses/THIRD-PARTY-NOTICES.md.
+The LGPL-licensed libraries are included unmodified, as separate shared
+libraries and Python source files, so that they can be replaced.

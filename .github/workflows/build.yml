@@ -73,6 +73,17 @@ jobs:
       - name: PyInstaller で固める
         run: pyinstaller --noconfirm packaging/moonshine-dictate.spec
 
+      - name: サードパーティのライセンスを集めて同梱する
+        shell: bash
+        run: |
+          python scripts/collect_licenses.py dist/moonshine-dictate/_internal build/third_party_licenses
+          if [ -d dist/moonshine-dictate.app ]; then
+            cp -R build/third_party_licenses dist/moonshine-dictate.app/Contents/Resources/
+          else
+            cp -R build/third_party_licenses dist/moonshine-dictate/
+          fi
+          cp build/third_party_licenses/THIRD-PARTY-NOTICES.md "dist/THIRD-PARTY-NOTICES-${{ matrix.name }}.md"
+
       - name: Windows のインストーラーを作る
         if: runner.os == 'Windows'
         shell: pwsh
@@ -93,6 +104,7 @@ jobs:
           ln -s /Applications build/dmg/Applications
           cp docs/user-guide.md "build/dmg/使い方.md"
           cp packaging/NOTICE.txt packaging/MOONSHINE-LICENSE.txt build/dmg/
+          cp -R build/third_party_licenses build/dmg/
           hdiutil create -volname moonshine-dictate -srcfolder build/dmg \
             -ov -format UDZO "dist/moonshine-dictate-${VERSION}-${{ matrix.name }}.dmg"
 
