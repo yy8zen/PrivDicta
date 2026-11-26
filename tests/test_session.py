@@ -12,6 +12,7 @@ class FakeEngine(QObject):
     activity = Signal()
     finished = Signal()
     failed = Signal(str)
+    mic_silent = Signal()
 
     def __init__(self):
         super().__init__()
