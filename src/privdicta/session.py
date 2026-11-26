@@ -28,6 +28,8 @@ class Overlay(Protocol):
 
 class Session(QObject):
     state_changed = Signal(str)
+    # マイクを開けなかった。引数はエラーの内容（要件 R2.8）
+    mic_blocked = Signal(str)
 
     def __init__(self, engine, overlay: Overlay, notify: Callable[[str, bool], None],
                  play_sound: Callable[[str], None]):
@@ -101,7 +103,7 @@ class Session(QObject):
         except Exception as e:
             log.exception("録音を開始できませんでした")
             self._beep("error")
-            self._notify(f"録音を開始できませんでした: {e}", True)
+            self.mic_blocked.emit(str(e) or type(e).__name__)
             return
         self._lines.clear()
         self._completed.clear()
