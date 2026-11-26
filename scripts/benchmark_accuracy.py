@@ -18,6 +18,8 @@
 K と P は、エンジンを替えるかどうかを決めるための比較用で、アプリでは使っていない。
 動かすには sherpa-onnx が要る（pip install sherpa-onnx）。モデルは初回に sherpa-onnx の
 GitHub のリリースから models/sherpa/ にダウンロードする（K は約 700MB、P は約 490MB）。
+K と P は別のプロセスで動かす。Moonshine と sherpa-onnx は版の違う ONNX Runtime を使い、
+Windows では1つのプロセスに1つの版しか読み込めないため。
 
 待ち時間の測り方
   A〜C は、アプリと同じく音声を少しずつ渡して認識し、録音の終わり（stop）からの時間を測る。
@@ -31,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -155,7 +158,7 @@ def fetch_sherpa_model(engine: str) -> Path:
     if dest.is_dir():
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
-    print(f"{name} をダウンロードしています…")
+    print(f"{name} をダウンロードしています…", file=sys.stderr, flush=True)
     with tempfile.TemporaryDirectory() as tmp:
         archive = Path(tmp) / f"{name}.tar.bz2"
         urllib.request.urlretrieve(f"{SHERPA_RELEASE}{name}.tar.bz2", archive)
@@ -264,11 +267,31 @@ def run_setting(setting: Setting, model_path: Path, arch_name: str, audio: np.nd
         transcriber.close()
 
 
+def run_other_engines(rec_dir: Path, keys: str) -> dict:
+    """K と P を別のプロセスで測り、{録音の名前: {設定: [認識結果, 待ち時間, 処理/長さ]}} を返す。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "result.json"
+        subprocess.run([sys.executable, str(Path(__file__).resolve()), str(rec_dir), "--settings", keys,
+                        "--worker-output", str(out)], check=True)
+        return json.loads(out.read_text(encoding="utf-8"))
+
+
+def worker(rec_dir: Path, keys: str, out: Path) -> None:
+    refs = json.loads((rec_dir / "references.json").read_text(encoding="utf-8"))
+    settings = [s for s in SETTINGS if s.key in keys and s.engine != "moonshine"]
+    results = {name: {s.key: run_setting(s, None, "", load_wav(rec_dir / name)) for s in settings}
+               for name in refs}
+    out.write_text(json.dumps(results, ensure_ascii=False), encoding="utf-8")
+
+
 def evaluate(rec_dir: Path, arch_key: str, keys: str) -> None:
     refs = json.loads((rec_dir / "references.json").read_text(encoding="utf-8"))
-    model_path = fetch(arch_key, force=False)
-    arch_name = MODEL_DIRS[arch_key][1]
     settings = [s for s in SETTINGS if s.key in keys]
+    other_keys = "".join(s.key for s in settings if s.engine != "moonshine")
+    other = run_other_engines(rec_dir, other_keys) if other_keys else {}
+    if any(s.engine == "moonshine" for s in settings):
+        model_path = fetch(arch_key, force=False)
+        arch_name = MODEL_DIRS[arch_key][1]
     summary = {s.key: {"errors": 0.0, "chars": 0, "latencies": [], "rtf": []} for s in settings}
 
     for name, reference in refs.items():
@@ -277,7 +300,10 @@ def evaluate(rec_dir: Path, arch_key: str, keys: str) -> None:
         print(f"■ {name}（{length:.1f}秒）正解：{reference}")
         n = len(normalize_for_cer(reference))
         for s in settings:
-            text, latency, rtf = run_setting(s, model_path, arch_name, audio)
+            if s.engine == "moonshine":
+                text, latency, rtf = run_setting(s, model_path, arch_name, audio)
+            else:
+                text, latency, rtf = other[name][s.key]
             e = cer(reference, text)
             summary[s.key]["errors"] += e * n
             summary[s.key]["chars"] += n
@@ -311,7 +337,11 @@ def main() -> int:
     parser.add_argument("--model", default="base", help=f"モデル（{', '.join(MODEL_DIRS)}）")
     parser.add_argument("--settings", default="BDKP", help="比べる設定（例：BK）。A〜D、K、P から選ぶ")
     parser.add_argument("--device", default="", help="マイクのデバイス名（一部でも可）")
+    parser.add_argument("--worker-output", type=Path, help=argparse.SUPPRESS)  # K と P を測る子プロセス用
     args = parser.parse_args()
+    if args.worker_output:
+        worker(args.recordings, args.settings.upper(), args.worker_output)
+        return 0
 
     rec_dir = args.recordings
     if rec_dir is None:
