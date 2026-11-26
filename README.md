@@ -5,7 +5,7 @@ Windows・macOS・Linux 対応の、ローカルで動く日本語の音声入�
 
 Powered by Moonshine AI
 
-配布物を使う人向けの説明は [docs/user-guide.md](docs/user-guide.md) にあります。同じ内容を、配布物に `使い方.md` として入れています。
+配布物を使う人向けの説明は [docs/user-guide.md](docs/user-guide.md) にあります。同じ内容を、インストーラーと dmg の中に `使い方.md` として、リリースのページに `privdicta-user-guide-ja.md` として入れています。
 
 ## インストールして起動する
 

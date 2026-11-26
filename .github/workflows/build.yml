@@ -115,7 +115,8 @@ jobs:
       - name: 使い方とライセンスを配布物の横に置く
         shell: bash
         run: |
-          cp docs/user-guide.md "dist/使い方.md"
+          # リリースに添付するファイル名は英数字にする。日本語のファイル名は GitHub が「default.md」に置き換えるため
+          cp docs/user-guide.md dist/privdicta-user-guide-ja.md
           cp packaging/NOTICE.txt packaging/MOONSHINE-LICENSE.txt dist/
 
       - name: 配布物のサイズを表示する
