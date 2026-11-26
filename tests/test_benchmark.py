@@ -34,3 +34,10 @@ def test_settings_use_app_options():
     assert by_key["A"].options == {}
     assert by_key["B"].options == TRANSCRIBER_OPTIONS
     assert by_key["D"].whole and by_key["D"].options["vad_threshold"] == "0"
+
+
+def test_other_engines_are_registered():
+    by_key = {s.key: s for s in b.SETTINGS}
+    assert by_key["K"].engine == "k2" and by_key["P"].engine == "parakeet"
+    assert set(b.OTHER_ENGINES) == {"k2", "parakeet"}
+    assert all(s.engine == "moonshine" for s in b.SETTINGS if s.key in "ABCD")
