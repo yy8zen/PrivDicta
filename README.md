@@ -147,7 +147,11 @@ python -m pytest                   # テスト（Linux では xvfb-run -a python
 pyinstaller packaging/privdicta.spec   # 配布用に固める
 ```
 
-要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。`v` で始まるタグを push すると、Windows のインストーラー、macOS の dmg（Apple Silicon 版のみ）、Linux の AppImage をリリースの下書きに添付します。下書きの中身を確かめて公開するには、Actions の「publish」を、公開するタグを指定して実行します。配布ファイル、ライセンスのファイル、サードパーティのライセンス一覧がそろっていない場合や、旧名称のファイルがある場合は、公開しません。
+要件は [docs/requirements.md](docs/requirements.md) にまとめています。配布物は GitHub Actions（`.github/workflows/build.yml`）で作ります。リリースの手順は次のとおりです。
+
+1. `src/privdicta/__init__.py` と `pyproject.toml` のバージョン番号を上げ、`docs/release-notes/v<バージョン>.md` にリリースノートを書く
+2. Actions の「build」を、`release_tag` に `v<バージョン>` を指定して main で実行する（`v` で始まるタグを push しても同じ）。Windows のインストーラー、macOS の dmg（Apple Silicon 版のみ）、Linux の AppImage を添付したリリースの下書きができる。タグとコードのバージョン番号が一致しなければ、下書きを作らない
+3. Actions の「publish」を、公開するタグを指定して実行する。配布ファイル、ライセンスのファイル、サードパーティのライセンス一覧がそろっていない場合や、旧名称のファイルがある場合は、公開しない
 
 ## 📄 ライセンス
 
