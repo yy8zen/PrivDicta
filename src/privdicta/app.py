@@ -11,7 +11,6 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication
 
 from privdicta import autostart, config, insert, sound
-from privdicta import mic_permission
 from privdicta.migrate import migrate_old_settings
 from privdicta.engine import BUNDLED_ARCH, Engine, resolve_model
 from privdicta.ipc import CommandServer
@@ -68,7 +67,6 @@ class DictateApp:
 
         self._overlay.stop_requested.connect(lambda: self._session.stop("ボタン"))
         self._session.state_changed.connect(self._on_state)
-        self._session.mic_denied = mic_permission.windows_access_denied
         self._session.mic_blocked.connect(self.show_mic_help)
         self._mic_dialog = None
         self._tray.toggle_requested.connect(self._session.toggle)
@@ -89,19 +87,16 @@ class DictateApp:
         self.reload(initial=True)
         if first_run:
             QTimer.singleShot(0, self.show_welcome)
-        # 起動時にもマイクの権限を確かめる。使い方の画面の後に出るよう、少し遅らせる
-        if mic_permission.windows_access_denied():
-            QTimer.singleShot(500, lambda: self.show_mic_help(True))
         return True
 
-    def show_mic_help(self, confirmed_denied: bool) -> None:
-        """マイクの権限がオフのときに、理由と OS の設定画面を開くボタンを出す（要件 R2.8）。"""
+    def show_mic_help(self, error: str | None) -> None:
+        """マイクを使えないときに、理由と OS の設定画面を開くボタンを出す（要件 R2.8）。"""
         from privdicta.ui.mic_help import MicHelpDialog
 
         if self._mic_dialog is not None:  # 同じ案内を重ねて出さない
             self._mic_dialog.raise_()
             return
-        dialog = MicHelpDialog(confirmed_denied)
+        dialog = MicHelpDialog(error)
         self._mic_dialog = dialog
         activate_app()
         try:

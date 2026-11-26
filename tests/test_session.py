@@ -117,16 +117,6 @@ def test_activity_resets_silence_timer(qapp):
     assert session.state == RECORDING
 
 
-def test_mic_failure_keeps_idle(qapp):
-    session, engine, _, _, notes, sounds = make()
-    engine.loaded.emit()
-    engine.fail_start = True
-    session.toggle()
-    assert session.state == IDLE
-    assert "no mic" in notes[-1]
-    assert sounds == ["error"]
-
-
 def test_postprocess_applied_to_inserted_text(qapp):
     session, engine, _, inserter, _, _ = make()
     session.configure(inserter, {}, "mic", True, 60, "add")

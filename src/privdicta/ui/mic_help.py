@@ -1,4 +1,4 @@
-"""マイクの権限がオフのときの案内の画面（要件 R2.8）。
+"""マイクを使えないときの案内の画面（要件 R2.8）。
 
 Qt の QMessageBox は日本語の文を細かく折り返し、幅を広げると右端が切れるため、自前で作る。
 """
@@ -13,14 +13,14 @@ from privdicta import mic_permission
 
 
 class MicHelpDialog(QDialog):
-    def __init__(self, confirmed_denied: bool, parent: QWidget | None = None):
+    def __init__(self, error: str | None, parent: QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle("PrivDicta：マイクを使えません")
 
         icon = QLabel()
         icon.setPixmap(self.style().standardIcon(QStyle.SP_MessageBoxWarning).pixmap(48, 48))
         icon.setAlignment(Qt.AlignTop)
-        text = QLabel(mic_permission.help_text(confirmed_denied))
+        text = QLabel(mic_permission.help_text(error))
         text.setWordWrap(True)
         text.setFixedWidth(440)
         text.setTextInteractionFlags(Qt.TextSelectableByMouse)

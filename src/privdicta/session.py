@@ -28,8 +28,8 @@ class Overlay(Protocol):
 
 class Session(QObject):
     state_changed = Signal(str)
-    # マイクの権限がオフで録音できない。True は OS の設定でオフだと確かめられた場合（要件 R2.8）
-    mic_blocked = Signal(bool)
+    # マイクを使えない。引数はマイクを開けなかったときのエラーの内容で、無音だった場合は None（要件 R2.8）
+    mic_blocked = Signal(object)
 
     def __init__(self, engine, overlay: Overlay, notify: Callable[[str, bool], None],
                  play_sound: Callable[[str], None]):
@@ -44,8 +44,6 @@ class Session(QObject):
         self._device = ""
         self._sound = True
         self._state = LOADING
-        # マイクの権限がオフかを返す関数。app.py が OS に合わせて差し替える
-        self.mic_denied: Callable[[], bool] = lambda: False
 
         self._silence = QTimer(self)
         self._silence.setSingleShot(True)
@@ -102,16 +100,12 @@ class Session(QObject):
     def start(self) -> None:
         if self._state != IDLE:
             return
-        if self.mic_denied():
-            self._beep("error")
-            self.mic_blocked.emit(True)
-            return
         try:
             self._engine.start(self._device)
         except Exception as e:
             log.exception("録音を開始できませんでした")
             self._beep("error")
-            self._notify(f"録音を開始できませんでした: {e}", True)
+            self.mic_blocked.emit(str(e) or type(e).__name__)
             return
         self._lines.clear()
         self._completed.clear()
@@ -156,7 +150,7 @@ class Session(QObject):
         if self._state == RECORDING:
             self.stop("マイクから音が届いていない")
             self._beep("error")
-            self.mic_blocked.emit(False)
+            self.mic_blocked.emit(None)
 
     def _on_activity(self) -> None:
         if self._state == RECORDING:
