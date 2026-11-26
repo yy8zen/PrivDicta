@@ -28,6 +28,12 @@ MODEL_DIRS = {
     # ストリーミング非対応。区切りが確定するまで途中結果は出ないが、Small Streaming より大きい
     "base": ("base-ja", "BASE"),
 }
+# Moonshine の認識エンジンに渡す設定（要件 R2.9）。
+# max_tokens_per_second は、1秒の音声あたりに出す文字（トークン）の上限で、繰り返しの暴走を止めるためのもの。
+# 既定値の 6.5 は英語向けで、日本語では正しい出力まで途中で切ってしまう。公式ドキュメントは日本語に 13.0 を推奨している
+# （docs/api/options.md、docs/models/accuracy.md、2026年11月に確認）
+TRANSCRIBER_OPTIONS = {"max_tokens_per_second": "13.0"}
+
 BUNDLED_ARCH = "base"  # 配布物に同梱するモデル
 
 
@@ -199,7 +205,8 @@ class Engine(QObject):
 
             if not spec.path.is_dir():
                 raise FileNotFoundError(f"モデルが見つかりません: {spec.path}")
-            self._transcriber = Transcriber(str(spec.path), ModelArch[spec.arch_name])
+            self._transcriber = Transcriber(str(spec.path), ModelArch[spec.arch_name],
+                                            options=dict(TRANSCRIBER_OPTIONS))
         except Exception as e:
             log.exception("モデルの読み込みに失敗しました")
             self.load_failed.emit(str(e))

@@ -144,6 +144,7 @@ python -m pip install -e ".[dev]"
 python scripts/fetch_model.py      # 同梱する日本語モデルを models/ にダウンロードする
 python -m privdicta        # 起動する
 python -m pytest                   # テスト（Linux では xvfb-run -a python -m pytest）
+python scripts/benchmark_accuracy.py   # 例文を読み上げて、設定ごとの文字の誤り率と待ち時間を測る
 pyinstaller packaging/privdicta.spec   # 配布用に固める
 ```
 
