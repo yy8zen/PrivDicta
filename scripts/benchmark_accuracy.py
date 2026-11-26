@@ -2,6 +2,7 @@
 
     python scripts/benchmark_accuracy.py                 # 例文を読み上げて録音し、測る
     python scripts/benchmark_accuracy.py recordings/benchmark-20261126-101500   # 前に録音した例文で測り直す
+    python scripts/benchmark_accuracy.py recordings/... --settings ABCDKP        # 比べる設定を選ぶ
 
 録音は recordings/benchmark-<日時>/ に WAV と正解の文（references.json）で保存する。
 同じ録音で、設定を変えて何度でも測り直せる。モデルが models/ になければダウンロードする。
@@ -11,12 +12,18 @@
   B  max_tokens_per_second=13.0（アプリの今の設定）
   C  B に加えて vad_threshold=0.3（話の区切りを長めにとる）
   D  B の設定で、区切らずに録音全体を一度に認識する
+  K  ReazonSpeech k2 v2（別のエンジン。録音全体を一度に認識する）
+  P  NVIDIA Parakeet TDT-CTC 0.6B ja（別のエンジン。録音全体を一度に認識する）
+
+K と P は、エンジンを替えるかどうかを決めるための比較用で、アプリでは使っていない。
+動かすには sherpa-onnx が要る（pip install sherpa-onnx）。モデルは初回に sherpa-onnx の
+GitHub のリリースから models/sherpa/ にダウンロードする（K は約 700MB、P は約 490MB）。
 
 待ち時間の測り方
   A〜C は、アプリと同じく音声を少しずつ渡して認識し、録音の終わり（stop）からの時間を測る。
   音声は実際の速さより速く渡すので、「処理時間/音声の長さ」も出す。これが 1 を超える設定は、
   実際に話している間に処理が追いつかず、録音を終えてからの待ち時間が表の値より長くなる。
-  D は、録音全体を認識するのにかかった時間を、そのまま録音を終えてからの待ち時間とする。
+  D・K・P は、録音全体を認識するのにかかった時間を、そのまま録音を終えてからの待ち時間とする。
 """
 
 from __future__ import annotations
@@ -25,7 +32,10 @@ import argparse
 import json
 import re
 import sys
+import tarfile
+import tempfile
 import threading
+import urllib.request
 import time
 import unicodedata
 import wave
@@ -63,6 +73,7 @@ class Setting:
     label: str
     options: dict
     whole: bool  # True なら録音全体を一度に認識する
+    engine: str = "moonshine"  # "moonshine" か、OTHER_ENGINES のキー
 
 
 SETTINGS = [
@@ -71,7 +82,16 @@ SETTINGS = [
     Setting("C", "13.0 + vad_threshold=0.3", {**TRANSCRIBER_OPTIONS, "vad_threshold": "0.3"}, False),
     Setting("D", "13.0 + 録音全体を一度に認識",
             {**TRANSCRIBER_OPTIONS, "vad_threshold": "0", "vad_max_segment_duration": "60"}, True),
+    Setting("K", "ReazonSpeech k2 v2", {}, True, "k2"),
+    Setting("P", "Parakeet 0.6B ja", {}, True, "parakeet"),
 ]
+
+# 比較用の別エンジン（sherpa-onnx で動かす）。ライセンスは k2 が Apache-2.0、Parakeet が CC-BY-4.0
+SHERPA_RELEASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/"
+OTHER_ENGINES = {
+    "k2": "sherpa-onnx-zipformer-ja-reazonspeech-2024-08-01",
+    "parakeet": "sherpa-onnx-nemo-parakeet-tdt_ctc-0.6b-ja-35000-int8",
+}
 
 
 # ---- 録音 ----
@@ -127,6 +147,61 @@ def load_wav(path: Path) -> np.ndarray:
     return pcm.astype(np.float32) / 32768
 
 
+# ---- 比較用の別エンジン ----
+
+def fetch_sherpa_model(engine: str) -> Path:
+    name = OTHER_ENGINES[engine]
+    dest = ROOT / "models" / "sherpa" / name
+    if dest.is_dir():
+        return dest
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    print(f"{name} をダウンロードしています…")
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = Path(tmp) / f"{name}.tar.bz2"
+        urllib.request.urlretrieve(f"{SHERPA_RELEASE}{name}.tar.bz2", archive)
+        with tarfile.open(archive) as tar:
+            try:
+                tar.extractall(dest.parent, filter="data")  # 書庫の外にファイルを書かせない
+            except TypeError:  # filter がない古い Python 3.11
+                root = dest.parent.resolve()
+                for m in tar.getmembers():
+                    if not (m.isfile() or m.isdir()) or not (root / m.name).resolve().is_relative_to(root):
+                        raise RuntimeError(f"書庫に不正な項目があります: {m.name}")
+                tar.extractall(dest.parent)
+    return dest
+
+
+_recognizers: dict = {}
+
+
+def sherpa_recognizer(engine: str):
+    if engine not in _recognizers:
+        try:
+            import sherpa_onnx
+        except ImportError:
+            raise SystemExit("K と P を測るには sherpa-onnx が要ります: pip install sherpa-onnx")
+        d = fetch_sherpa_model(engine)
+        if engine == "k2":
+            rec = sherpa_onnx.OfflineRecognizer.from_transducer(
+                encoder=str(d / "encoder-epoch-99-avg-1.int8.onnx"),
+                decoder=str(d / "decoder-epoch-99-avg-1.int8.onnx"),
+                joiner=str(d / "joiner-epoch-99-avg-1.int8.onnx"),
+                tokens=str(d / "tokens.txt"), num_threads=4)
+        else:
+            rec = sherpa_onnx.OfflineRecognizer.from_nemo_ctc(
+                model=str(d / "model.int8.onnx"), tokens=str(d / "tokens.txt"), num_threads=4)
+        decode(rec, np.zeros(SAMPLE_RATE, dtype=np.float32))  # 初回だけ遅いので、測る前に1回動かす
+        _recognizers[engine] = rec
+    return _recognizers[engine]
+
+
+def decode(rec, audio: np.ndarray) -> str:
+    stream = rec.create_stream()
+    stream.accept_waveform(SAMPLE_RATE, audio)
+    rec.decode_stream(stream)
+    return stream.result.text
+
+
 # ---- 評価 ----
 
 _DROP = re.compile(r"[\s、。，．,.！？!?「」『』（）()・…ー〜~]")
@@ -153,10 +228,17 @@ def cer(reference: str, hypothesis: str) -> float:
 
 def run_setting(setting: Setting, model_path: Path, arch_name: str, audio: np.ndarray) -> tuple[str, float, float]:
     """(認識結果, 録音を終えてからの秒数, 処理時間/音声の長さ) を返す。"""
+    length = len(audio) / SAMPLE_RATE
+    if setting.engine != "moonshine":
+        rec = sherpa_recognizer(setting.engine)
+        t0 = time.monotonic()
+        text = decode(rec, audio)
+        latency = time.monotonic() - t0
+        return normalize_spaces(text), latency, latency / max(length, 1e-6)
+
     from moonshine_voice import ModelArch, Transcriber
 
     transcriber = Transcriber(str(model_path), ModelArch[arch_name], options=dict(setting.options))
-    length = len(audio) / SAMPLE_RATE
     try:
         if setting.whole:
             t0 = time.monotonic()
@@ -205,6 +287,7 @@ def evaluate(rec_dir: Path, arch_key: str, keys: str) -> None:
         print()
 
     print("=" * 60)
+    print("※ K は句読点を出さず、数字を漢数字で書くことがある。誤り率は句読点を数えないが、数字の書き方の違いは誤りに数える")
     print(f"モデル：{arch_key}　録音：{rec_dir}")
     print("設定                                 誤り率   待ち時間（最大）  処理/長さ（最大）")
     for s in settings:
@@ -212,11 +295,13 @@ def evaluate(rec_dir: Path, arch_key: str, keys: str) -> None:
         rate = r["errors"] / max(r["chars"], 1) * 100
         worst = max(lat for _, lat in r["latencies"])
         print(f"{s.key} {s.label:<32} {rate:5.1f}%   {worst:5.2f}秒          {max(r['rtf']):4.2f}")
-    d = summary.get("D")
-    if d:
-        ok = [length for length, lat in d["latencies"] if lat <= 1.0]
-        print(f"\nD で待ち時間が1秒以内に収まった最も長い録音：{max(ok):.1f}秒" if ok
-              else "\nD はどの録音でも待ち時間が1秒を超えました")
+    print()
+    for key in "DKP":
+        d = summary.get(key)
+        if d:
+            ok = [length for length, lat in d["latencies"] if lat <= 1.0]
+            print(f"{key} で待ち時間が1秒以内に収まった最も長い録音：{max(ok):.1f}秒" if ok
+                  else f"{key} はどの録音でも待ち時間が1秒を超えました")
 
 
 def main() -> int:
@@ -224,7 +309,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("recordings", nargs="?", type=Path, help="前に録音したフォルダ。省略すると録音から始める")
     parser.add_argument("--model", default="base", help=f"モデル（{', '.join(MODEL_DIRS)}）")
-    parser.add_argument("--settings", default="ABCD", help="比べる設定（例：BD）")
+    parser.add_argument("--settings", default="BDKP", help="比べる設定（例：BK）。A〜D、K、P から選ぶ")
     parser.add_argument("--device", default="", help="マイクのデバイス名（一部でも可）")
     args = parser.parse_args()
 
