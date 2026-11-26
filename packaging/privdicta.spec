@@ -3,12 +3,15 @@
 #   pyinstaller packaging/privdicta.spec
 # -*- mode: python -*-
 
+import re
 import sys
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 ROOT = Path(SPECPATH).parent
+# バージョン番号は src/privdicta/__init__.py の __version__ から読む
+VERSION = re.search(r'__version__ = "([^"]+)"', (ROOT / "src" / "privdicta" / "__init__.py").read_text()).group(1)
 # 同梱するモデル。small-streaming は精度が低く使われなかったため、base だけを入れる（要件 R2.5）
 MODELS = ["base-ja"]
 
@@ -98,6 +101,6 @@ if sys.platform == "darwin":
         info_plist={
             "LSUIElement": True,  # Dock に出さず、メニューバーだけに常駐する
             "NSMicrophoneUsageDescription": "音声入力のためにマイクを使います。音声は外部に送信しません。",
-            "CFBundleShortVersionString": "0.2.0",
+            "CFBundleShortVersionString": VERSION,
         },
     )

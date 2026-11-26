@@ -6,6 +6,11 @@ on:
     branches: [main]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: リリースを作るときのタグ（例 v0.2.1）。指定すると、main からタグとリリースの下書きを作る。空ならビルドだけ
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -13,6 +18,8 @@ permissions:
 env:
   # Windows のコンソールは cp1252 のため、日本語を print すると落ちる
   PYTHONUTF8: "1"
+  # リリースのタグ。タグの push で動いたときはそのタグ、手動で実行したときは入力のタグ。それ以外は空
+  RELEASE_TAG: ${{ inputs.release_tag || (startsWith(github.ref, 'refs/tags/v') && github.ref_name) || '' }}
 
 jobs:
   test:
@@ -54,8 +61,8 @@ jobs:
       - name: バージョンを決める
         shell: bash
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          if [[ -n "$RELEASE_TAG" ]]; then
+            echo "VERSION=${RELEASE_TAG#v}" >> "$GITHUB_ENV"
           else
             echo "VERSION=0.1.0-dev.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           fi
@@ -135,7 +142,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
     needs: package
     runs-on: ubuntu-latest
     steps:
@@ -146,13 +153,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: src
+      - name: タグとコードのバージョン番号が一致するかを確かめる
+        run: |
+          code=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' src/src/privdicta/__init__.py)
+          if [ "v$code" != "$RELEASE_TAG" ]; then
+            echo "::error::タグ $RELEASE_TAG とコードのバージョン番号 $code が一致しません"
+            exit 1
+          fi
       - name: リリースノートの有無を確かめる
         id: notes
         run: |
-          f="src/docs/release-notes/${GITHUB_REF_NAME}.md"
+          f="src/docs/release-notes/${RELEASE_TAG}.md"
           if [ -f "$f" ]; then echo "path=$f" >> "$GITHUB_OUTPUT"; fi
       - uses: softprops/action-gh-release@v2
         with:
+          # タグがまだなければ、ビルドしたコミットに作る（手動で実行したとき）
+          tag_name: ${{ env.RELEASE_TAG }}
+          target_commitish: ${{ github.sha }}
           files: artifacts/*
           body_path: ${{ steps.notes.outputs.path }}
           draft: true

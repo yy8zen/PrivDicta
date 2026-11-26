@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "privdicta"
-version = "0.2.0"
+version = "0.2.1"
 description = "Moonshine Voice を使ったローカル日本語音声入力ツール"
 readme = "README.md"
 license = "MIT"
