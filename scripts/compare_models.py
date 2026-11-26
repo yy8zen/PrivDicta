@@ -25,7 +25,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from fetch_model import fetch  # noqa: E402
-from privdicta.engine import BLOCK_FRAMES, MODEL_DIRS, SAMPLE_RATE  # noqa: E402
+from privdicta.engine import BLOCK_FRAMES, MODEL_DIRS, SAMPLE_RATE, TRANSCRIBER_OPTIONS  # noqa: E402
 
 COMPARE = ["small-streaming", "base", "tiny-streaming"]
 
@@ -85,7 +85,8 @@ def transcribe(arch_key: str, audio: np.ndarray) -> tuple[str, float, float]:
 
     path = fetch(arch_key, force=False)
     t0 = time.monotonic()
-    transcriber = Transcriber(str(path), ModelArch[MODEL_DIRS[arch_key][1]])
+    transcriber = Transcriber(str(path), ModelArch[MODEL_DIRS[arch_key][1]],
+                              options=dict(TRANSCRIBER_OPTIONS))
     load_sec = time.monotonic() - t0
     lines: dict = {}
     stream = transcriber.create_stream()
