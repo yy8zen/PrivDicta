@@ -36,6 +36,7 @@ class Config:
     model_dir: str = ""
     model_arch: str = DEFAULT_MODEL_ARCH
     punctuation: str = "keep"
+    save_recordings: bool = False
     replace: dict[str, str] = field(default_factory=dict)
     # 読み込み時に見つかった誤り。設定項目ではない
     errors: list[str] = field(default_factory=list, compare=False)
@@ -79,6 +80,10 @@ autostart = {autostart}
 
 # ログの出力量: "error" / "info" / "debug"
 log_level = {log_level}
+
+# 認識の精度を調べるために、録音と認識結果を PC の中に保存するか。保存したものはどこにも送りません
+# 保存先は、この設定ファイルと同じ場所の recordings フォルダです
+save_recordings = {save_recordings}
 
 # 使うモデルの種類
 #   "base"            : 標準。区切りが確定してから文字が出ます
@@ -172,6 +177,7 @@ def parse(raw: dict) -> Config:
     take("model_dir", str)
     take("model_arch", str, MODEL_ARCHS)
     take("punctuation", str, PUNCTUATION_MODES)
+    take("save_recordings", bool)
 
     if "replace" in raw:
         table = raw["replace"]

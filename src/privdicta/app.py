@@ -15,6 +15,7 @@ from privdicta.migrate import migrate_old_settings
 from privdicta.engine import BUNDLED_ARCH, Engine, resolve_model
 from privdicta.ipc import CommandServer
 from privdicta.platform_info import config_path, is_wayland, log_path
+from privdicta.recordings import RecordingStore
 from privdicta.session import FINISHING, IDLE, LOADING, RECORDING, Session
 from privdicta.ui.native import activate_app, hide_dock_icon
 from privdicta.ui.overlay import RecordingOverlay
@@ -139,8 +140,10 @@ class DictateApp:
 
         inserter = insert.create(cfg.insert_method, cfg.restore_clipboard,
                                  self._wait_keys_released, lambda m: self._notify(m, False))
+        self._engine.keep_audio = cfg.save_recordings
         self._session.configure(inserter, cfg.replace, cfg.input_device, cfg.sound,
-                                cfg.silence_timeout_sec, cfg.punctuation)
+                                cfg.silence_timeout_sec, cfg.punctuation,
+                                RecordingStore() if cfg.save_recordings else None)
         self._set_hotkey(cfg.hotkey)
         autostart.apply(cfg.autostart)
 

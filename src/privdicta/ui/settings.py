@@ -229,10 +229,20 @@ class SettingsDialog(QDialog):
         for key in LOG_LEVELS:
             self.log_level.addItem(LOG_LABELS[key], key)
         self._select(self.log_level, cfg.log_level)
+        self.save_recordings = QCheckBox("認識の精度を調べるために、録音と認識結果を PC の中に保存する")
+        self.save_recordings.setChecked(cfg.save_recordings)
+        self.save_recordings.setToolTip("保存したものはどこにも送りません。不要になったら保存先のフォルダごと消してください")
+        open_recordings = QPushButton("保存先を開く")
+        open_recordings.clicked.connect(self._open_recordings)
+        recordings_row = QHBoxLayout()
+        recordings_row.addWidget(self.save_recordings)
+        recordings_row.addWidget(open_recordings)
+        recordings_row.addStretch()
         other = QGroupBox("その他")
         form = QFormLayout(other)
         form.addRow("", self.autostart)
         form.addRow("ログの出力量", self.log_level)
+        form.addRow("", recordings_row)
 
         # ---- ボタン ----
         buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
@@ -273,11 +283,23 @@ class SettingsDialog(QDialog):
             sound=self.sound.isChecked(),
             autostart=self.autostart.isChecked(),
             log_level=self.log_level.currentData(),
+            save_recordings=self.save_recordings.isChecked(),
             replace=replace,
             errors=[],
         )
 
     # ---- 内部 ----
+
+    @staticmethod
+    def _open_recordings() -> None:
+        from PySide6.QtCore import QUrl
+        from PySide6.QtGui import QDesktopServices
+
+        from privdicta.recordings import default_dir
+
+        directory = default_dir()
+        directory.mkdir(parents=True, exist_ok=True)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(directory)))
 
     @staticmethod
     def _select(combo: QComboBox, data) -> None:

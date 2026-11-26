@@ -10,6 +10,7 @@ class FakeEngine(QObject):
     line_changed = Signal(object, str)
     line_completed = Signal(object, str)
     activity = Signal()
+    recorded = Signal(object, int)
     finished = Signal()
     failed = Signal(str)
 
@@ -125,3 +126,40 @@ def test_postprocess_applied_to_inserted_text(qapp):
     session.stop()
     engine.finished.emit()
     assert inserter.texts == ["その中で。"]
+
+
+class FakeStore:
+    def __init__(self):
+        self.saved = []
+
+    def save(self, audio, rate, text):
+        self.saved.append((len(audio), rate, text))
+
+
+def test_recording_is_saved_with_inserted_text(qapp):
+    import numpy as np
+
+    session, engine, overlay, inserter, _, _ = make()
+    store = FakeStore()
+    session.configure(inserter, {}, "mic", True, 60, store=store)
+    engine.loaded.emit()
+    session.toggle()
+    engine.line_completed.emit(1, "今日は")
+    engine.line_completed.emit(2, "晴れです")
+    session.toggle()
+    engine.recorded.emit(np.zeros(320, dtype=np.float32), 16000)
+    engine.finished.emit()
+    process_events(qapp)
+    assert store.saved == [(320, 16000, inserter.texts[0])]
+
+
+def test_recording_is_not_saved_without_store(qapp):
+    import numpy as np
+
+    session, engine, *_ = make()
+    engine.loaded.emit()
+    session.toggle()
+    session.toggle()
+    engine.recorded.emit(np.zeros(320, dtype=np.float32), 16000)
+    engine.finished.emit()  # 保存先がなければ何もしない（例外にならない）
+    assert session.state == IDLE
