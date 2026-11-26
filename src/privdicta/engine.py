@@ -14,7 +14,6 @@ from pathlib import Path
 
 from PySide6.QtCore import QObject, Signal
 
-from privdicta.mic_permission import SilenceDetector
 from privdicta.platform_info import resource_root
 
 log = logging.getLogger(__name__)
@@ -98,8 +97,6 @@ class Engine(QObject):
     # stop() の後、残りの音声の認識が終わった
     finished = Signal()
     failed = Signal(str)
-    # 録音の最初の数秒、マイクから完全な無音しか届かない。マイクの権限がオフかミュート（要件 R2.8）
-    mic_silent = Signal()
 
     _STOP = object()
 
@@ -108,7 +105,6 @@ class Engine(QObject):
         self._transcriber = None
         self._commands: queue.Queue = queue.Queue()
         self._audio_stream = None
-        self._silence = SilenceDetector()
         self._worker = threading.Thread(target=self._run, name="privdicta-engine", daemon=True)
         self._worker.start()
 
@@ -125,7 +121,6 @@ class Engine(QObject):
         import sounddevice as sd
 
         device = find_input_device(device_name)
-        self._silence = SilenceDetector()
         self._commands.put(("begin", None))
         try:
             self._audio_stream = self._open_stream(sd, device)
@@ -152,11 +147,7 @@ class Engine(QObject):
         def callback(indata, frames, time_info, status):  # PortAudio のスレッド
             if status:
                 log.debug("マイク入力の状態: %s", status)
-            audio = indata[:, 0].copy()
-            if self._silence.feed(audio, rate):
-                log.warning("マイクから完全な無音しか届いていません")
-                self.mic_silent.emit()
-            self._commands.put(("audio", (audio, rate)))
+            self._commands.put(("audio", (indata[:, 0].copy(), rate)))
 
         try:
             rate = SAMPLE_RATE

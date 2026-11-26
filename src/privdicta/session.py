@@ -28,8 +28,8 @@ class Overlay(Protocol):
 
 class Session(QObject):
     state_changed = Signal(str)
-    # マイクを使えない。引数はマイクを開けなかったときのエラーの内容で、無音だった場合は None（要件 R2.8）
-    mic_blocked = Signal(object)
+    # マイクを開けなかった。引数はエラーの内容（要件 R2.8）
+    mic_blocked = Signal(str)
 
     def __init__(self, engine, overlay: Overlay, notify: Callable[[str, bool], None],
                  play_sound: Callable[[str], None]):
@@ -61,8 +61,6 @@ class Session(QObject):
         engine.line_completed.connect(self._on_line_completed)
         engine.activity.connect(self._on_activity)
         engine.finished.connect(self._on_finished)
-        if hasattr(engine, "mic_silent"):
-            engine.mic_silent.connect(self._on_mic_silent)
         engine.failed.connect(lambda msg: self._notify(f"認識でエラーが起きました: {msg}", True))
 
     # ---- 設定 ----
@@ -145,12 +143,6 @@ class Session(QObject):
             return
         self._set_state(BROKEN)
         self._notify(f"モデルを読み込めませんでした: {message}", True)
-
-    def _on_mic_silent(self) -> None:
-        if self._state == RECORDING:
-            self.stop("マイクから音が届いていない")
-            self._beep("error")
-            self.mic_blocked.emit(None)
 
     def _on_activity(self) -> None:
         if self._state == RECORDING:

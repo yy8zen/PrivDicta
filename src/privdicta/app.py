@@ -89,7 +89,7 @@ class DictateApp:
             QTimer.singleShot(0, self.show_welcome)
         return True
 
-    def show_mic_help(self, error: str | None) -> None:
+    def show_mic_help(self, error: str) -> None:
         """マイクを使えないときに、理由と OS の設定画面を開くボタンを出す（要件 R2.8）。"""
         from privdicta.ui.mic_help import MicHelpDialog
 

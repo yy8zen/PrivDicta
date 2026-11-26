@@ -13,7 +13,7 @@ from privdicta import mic_permission
 
 
 class MicHelpDialog(QDialog):
-    def __init__(self, error: str | None, parent: QWidget | None = None):
+    def __init__(self, error: str, parent: QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle("PrivDicta：マイクを使えません")
 
