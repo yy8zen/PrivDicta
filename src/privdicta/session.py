@@ -43,6 +43,8 @@ class Session(QObject):
         self._punctuation = "keep"
         self._device = ""
         self._sound = True
+        self._store = None  # 録音を保存する先（要件 R2.10）。None なら保存しない
+        self._recorded = None
         self._state = LOADING
 
         self._silence = QTimer(self)
@@ -54,25 +56,28 @@ class Session(QObject):
         self._lines: dict[object, str] = {}
         self._completed: set = set()
         self._collected: list[str] = []
+        self._inserted: list[str] = []  # 1回の録音で入力した文。録音の保存に使う
 
         engine.loaded.connect(self._on_loaded)
         engine.load_failed.connect(self._on_load_failed)
         engine.line_changed.connect(self._on_line_changed)
         engine.line_completed.connect(self._on_line_completed)
         engine.activity.connect(self._on_activity)
+        engine.recorded.connect(self._on_recorded)
         engine.finished.connect(self._on_finished)
         engine.failed.connect(lambda msg: self._notify(f"認識でエラーが起きました: {msg}", True))
 
     # ---- 設定 ----
 
     def configure(self, inserter, replace: dict[str, str], device: str, sound: bool,
-                  silence_timeout_sec: int, punctuation: str = "keep") -> None:
+                  silence_timeout_sec: int, punctuation: str = "keep", store=None) -> None:
         """設定を反映する。録音中に呼ばれた場合は、次の録音から効く項目がある。"""
         self._inserter = inserter
         self._replace = dict(replace)
         self._punctuation = punctuation
         self._device = device
         self._sound = sound
+        self._store = store
         self.set_silence_timeout(silence_timeout_sec)
 
     def set_silence_timeout(self, seconds: int) -> None:
@@ -108,6 +113,8 @@ class Session(QObject):
         self._lines.clear()
         self._completed.clear()
         self._collected.clear()
+        self._inserted.clear()
+        self._recorded = None
         self._set_state(RECORDING)
         self._overlay.show_recording()
         self._beep("start")
@@ -166,10 +173,14 @@ class Session(QObject):
         if not text:
             return
         self._overlay.commit(text)
+        self._inserted.append(text)
         if self._inserter is not None and self._inserter.live:
             self._insert(text)
         else:
             self._collected.append(text)
+
+    def _on_recorded(self, audio, rate: int) -> None:
+        self._recorded = (audio, rate)
 
     def _on_finished(self) -> None:
         # 確定の通知が来ないまま終わった区切りも、最後のテキストで確定扱いにする
@@ -179,6 +190,7 @@ class Session(QObject):
         if self._inserter is not None and not self._inserter.live:
             self._insert(join_lines(self._collected))
         self._collected.clear()
+        self._save_recording()
         self._overlay.hide()
         if self._state in (RECORDING, FINISHING):
             if self._state == RECORDING:  # エンジン側の失敗で終わった
@@ -196,6 +208,16 @@ class Session(QObject):
         except Exception as e:
             log.exception("テキストを入力できませんでした")
             self._notify(f"テキストを入力できませんでした: {e}", True)
+
+    def _save_recording(self) -> None:
+        recorded, self._recorded = self._recorded, None
+        if self._store is None or recorded is None:
+            return
+        try:
+            self._store.save(*recorded, join_lines(self._inserted))
+        except Exception as e:
+            log.exception("録音を保存できませんでした")
+            self._notify(f"録音を保存できませんでした: {e}", True)
 
     def _beep(self, kind: str) -> None:
         if self._sound:

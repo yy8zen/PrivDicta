@@ -4,6 +4,10 @@
     python scripts/benchmark_accuracy.py recordings/benchmark-20261126-101500   # 前に録音した例文で測り直す
     python scripts/benchmark_accuracy.py recordings/... --settings ABCDKP        # 比べる設定を選ぶ
 
+アプリの設定で「録音と認識結果を PC の中に保存する」をオンにすると、普段使った録音でも測れる。
+保存先のフォルダの recognized.json をコピーして references.json にし、誤っている文を直してから、
+そのフォルダを指定する。
+
 録音は recordings/benchmark-<日時>/ に WAV と正解の文（references.json）で保存する。
 同じ録音で、設定を変えて何度でも測り直せる。モデルが models/ になければダウンロードする。
 
@@ -285,6 +289,11 @@ def worker(rec_dir: Path, keys: str, out: Path) -> None:
 
 
 def evaluate(rec_dir: Path, arch_key: str, keys: str) -> None:
+    if not (rec_dir / "references.json").exists():
+        if (rec_dir / "recognized.json").exists():
+            raise SystemExit("references.json がありません。アプリが保存した recognized.json をコピーして "
+                             "references.json という名前にし、誤っている文を、実際に話した文に直してください")
+        raise SystemExit(f"{rec_dir} に references.json がありません")
     refs = json.loads((rec_dir / "references.json").read_text(encoding="utf-8"))
     settings = [s for s in SETTINGS if s.key in keys]
     other_keys = "".join(s.key for s in settings if s.engine != "moonshine")

@@ -100,6 +100,8 @@ class Engine(QObject):
     line_completed = Signal(object, str)
     # 発話を検出した。無音タイムアウトの計測をやり直すのに使う（要件 R3.2）
     activity = Signal()
+    # 1回の録音の音声（numpy の配列, サンプリングレート）。keep_audio が真のときだけ、finished の直前に出す（要件 R2.10）
+    recorded = Signal(object, int)
     # stop() の後、残りの音声の認識が終わった
     finished = Signal()
     failed = Signal(str)
@@ -111,6 +113,7 @@ class Engine(QObject):
         self._transcriber = None
         self._commands: queue.Queue = queue.Queue()
         self._audio_stream = None
+        self.keep_audio = False  # 真なら、録音の音声を recorded で渡す
         self._worker = threading.Thread(target=self._run, name="privdicta-engine", daemon=True)
         self._worker.start()
 
@@ -171,20 +174,31 @@ class Engine(QObject):
 
     def _run(self) -> None:
         stream = None
+        kept: list = []
+        kept_rate = SAMPLE_RATE
         while True:
             command, payload = self._commands.get()
             try:
                 if command == "load":
                     self._load(payload)
                 elif command == "begin":
+                    kept = []
                     stream = self._begin()
                 elif command == "audio" and stream is not None:
                     audio, rate = payload
+                    if self.keep_audio:
+                        kept.append(audio)
+                        kept_rate = rate
                     stream.add_audio(audio.tolist(), rate)
                 elif command == "end" and stream is not None:
                     stream.stop()  # 残りの音声を認識し、最後のイベントを出す
                     stream.close()
                     stream = None
+                    if kept:
+                        import numpy as np
+
+                        self.recorded.emit(np.concatenate(kept), kept_rate)
+                        kept = []
                     self.finished.emit()
                 elif command == "quit":
                     return
